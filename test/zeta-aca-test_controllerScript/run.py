@@ -6,6 +6,7 @@ import time
 import sys
 import itertools
 from math import ceil
+import threading
 
 server_aca_repo_path = ''
 aca_data_destination_path = '/test/gtest/aca_data.json'
@@ -273,23 +274,35 @@ def run():
     else:
         print("upload file %s successfully" % aca_data_local_path)
 
+
     # Execute remote command, use the transferred file to change the information in aca_test_ovs_util.cpp,recompile using 'make',perform aca_test
     aca_nodes = aca_nodes_ip
     cmd_list2 = [
         f'cd {server_aca_repo_path};sudo ./build/tests/aca_tests --gtest_also_run_disabled_tests --gtest_filter=*{testcases_to_run[0]}']
-    result2 = exec_sshCommand_aca(
-        host=aca_nodes[1], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=cmd_list2, timeout=1500)
+    t1 = threading.Thread(target=exec_sshCommand_aca, args=(aca_nodes[1], aca_nodes_data['username'], aca_nodes_data['password'], cmd_list2, 1500))
+    
+    # result2 = exec_sshCommand_aca(
+    #     host=aca_nodes[1], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=cmd_list2, timeout=1500)
 
     cmd_list1 = [
         f'cd {server_aca_repo_path};sudo ./build/tests/aca_tests --gtest_also_run_disabled_tests --gtest_filter=*{testcases_to_run[1]}']
-    result1 = exec_sshCommand_aca(
-        host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=cmd_list1, timeout=1500)
-    print(f'Status from node [{aca_nodes[0]}]: {result1["status"]}')
-    print(f'Data from node [{aca_nodes[0]}]: {result1["data"]}')
-    print(f'Error from node [{aca_nodes[0]}]: {result1["error"]}')
-    print(f'Status from node [{aca_nodes[1]}]: {result2["status"]}')
-    print(f'Data from node [{aca_nodes[1]}]: {result2["data"]}')
-    print(f'Error from node [{aca_nodes[1]}]: {result2["error"]}')
+    
+    t2 = threading.Thread(target=exec_sshCommand_aca, args=(aca_nodes[0], aca_nodes_data['username'], aca_nodes_data['password'], cmd_list1, 1500))
+    
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+
+    # result1 = exec_sshCommand_aca(
+    #     host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=cmd_list1, timeout=1500)
+    # print(f'Status from node [{aca_nodes[0]}]: {result1["status"]}')
+    # print(f'Data from node [{aca_nodes[0]}]: {result1["data"]}')
+    # print(f'Error from node [{aca_nodes[0]}]: {result1["error"]}')
+    # print(f'Status from node [{aca_nodes[1]}]: {result2["status"]}')
+    # print(f'Data from node [{aca_nodes[1]}]: {result2["data"]}')
+    # print(f'Error from node [{aca_nodes[1]}]: {result2["error"]}')
 
 
 if __name__ == '__main__':
