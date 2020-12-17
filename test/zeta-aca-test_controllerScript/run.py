@@ -14,9 +14,7 @@ aca_data_local_path = './aca_data.json'
 
 ips_ports_ip_prefix = "123."
 mac_port_prefix = "6c:dd:ee:"
-port_api_upper_limit = 1000
-time_interval_between_calls_in_seconds = 10
-ports_to_create = 2
+
 
 # Transfer the file locally to aca nodes
 
@@ -89,7 +87,7 @@ def exec_sshCommand_aca(host, user, password, cmd, timeout=60):
         return result
 
 
-def talk_to_zeta(file_path, zgc_api_url, zeta_data):
+def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_interval_between_calls_in_seconds):
     headers = {'Content-type': 'application/json'}
     # create ZGC
     ZGC_data = zeta_data["ZGC_data"]
@@ -245,6 +243,9 @@ def generate_ports(ports_to_create):
 
 
 def run():
+    port_api_upper_limit = 1000
+    time_interval_between_calls_in_seconds = 10
+    ports_to_create = 2
     # right now the only argument should be how many ports to be generated.
     arguments = sys.argv
     print(f'Arguments: {arguments}')
@@ -292,7 +293,7 @@ def run():
         print(
             f'Set time interval between /nodes POST calls to be {arg3} seconds.')
 
-    talk_to_zeta(file_path, zgc_api_url, zeta_data)
+    talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_interval_between_calls_in_seconds)
 
     aca_nodes_data = zeta_data["aca_nodes"]
     aca_nodes_ip = aca_nodes_data['ip']
