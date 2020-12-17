@@ -241,6 +241,13 @@ def generate_ports(ports_to_create):
 # To run the pseudo controller, the user either runs it without specifying how many ports to create, which leads to creating 2 ports and running the
 # DISABLED_zeta_gateway_path_CHILD and DISABLED_zeta_gateway_path_PARENT; if you specify the amount of ports to create (up to one milliion ports), using the command 'python3 run.py amount_of_ports_to_create', the controller will that many ports, and then run DISABLED_zeta_scale_CHILD and DISABLED_zeta_scale_PARENT
 
+# Also, two more params are added.
+# First is port_api_upper_limit, which should not exceed 4000, it is the batch number for each /ports POST call.
+# Second is time_interval_between_calls_in_seconds, it is the time the pseudo controller sleeps after each /port POST call, except for the last call.
+
+# So if you only want to run the two nodes test, you can simply run 'python3 run.py'
+# If you want to try to scale test, you can run 'python3 run.py total_amount_of_ports how_many_ports_each_batch, how_many_seconds_controller_sleeps_after_each_call.'
+
 
 def run():
     port_api_upper_limit = 1000
@@ -293,7 +300,8 @@ def run():
         print(
             f'Set time interval between /nodes POST calls to be {arg3} seconds.')
 
-    talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_interval_between_calls_in_seconds)
+    talk_to_zeta(file_path, zgc_api_url, zeta_data,
+                 port_api_upper_limit, time_interval_between_calls_in_seconds)
 
     aca_nodes_data = zeta_data["aca_nodes"]
     aca_nodes_ip = aca_nodes_data['ip']
@@ -325,7 +333,8 @@ def run():
     t1.join()
     t2.join()
     test_end_time = time.time()
-    print(f'Time took for the tests of ACA nodes are {test_end_time - test_start_time} seconds.')
+    print(
+        f'Time took for the tests of ACA nodes are {test_end_time - test_start_time} seconds.')
 
 
 if __name__ == '__main__':
