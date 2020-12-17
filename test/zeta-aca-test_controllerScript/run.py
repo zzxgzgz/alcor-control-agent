@@ -305,6 +305,7 @@ def run():
     else:
         print("upload file %s successfully" % aca_data_local_path)
 
+    test_start_time = time.time()
     # Execute remote command, use the transferred file to change the information in aca_test_ovs_util.cpp,recompile using 'make',perform aca_test
     aca_nodes = aca_nodes_ip
     cmd_list2 = [
@@ -323,6 +324,8 @@ def run():
 
     t1.join()
     t2.join()
+    test_end_time = time.time()
+    print(f'Time took for the tests of ACA nodes are {test_end_time - test_start_time} seconds.')
 
 
 if __name__ == '__main__':
