@@ -277,8 +277,8 @@ def run():
         elif ports_to_create < 2:
             print('Too little ports to create, please enter a bigger number')
 
-    if len(arguments) >= 2:
-        arg2 = int(arguments[1])
+    if len(arguments) > 2:
+        arg2 = int(arguments[2])
         if arg2 <= 4000:
             port_api_upper_limit = arg2
             print(f'Set the amount of ports in each port call to be {arg2}')
@@ -286,8 +286,8 @@ def run():
             print(
                 f'You are trying to call the /nodes api with more than {arg2} entries per time, which is too much. Please enter a number no more than 4000.')
             return
-    if len(arguments) >= 3:
-        arg3 = int(arguments[2])
+    if len(arguments) > 3:
+        arg3 = int(arguments[3])
         time_interval_between_calls_in_seconds = arg3
         print(
             f'Set time interval between /nodes POST calls to be {arg3} seconds.')
