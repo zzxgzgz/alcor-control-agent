@@ -97,6 +97,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
     zgc_response = requests.post(
         zgc_api_url + "/zgcs", data=json.dumps(ZGC_data), headers=headers)
     print(f'zgc creation response: \n{zgc_response.text}')
+    print(f'zgc creation response status code: \n{zgc_response.status_code}')
     if zgc_response.status_code >= 300:
             print('Failed to create zgc, pseudo controller will stop now.')
             return False
@@ -110,6 +111,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
         node_response_data = requests.post(
             zgc_api_url + "/nodes", data=json.dumps(node_data), headers=headers)
         print(f'Response for adding node: {node_response_data.text}')
+        print(f'Response for adding node status code: {node_response_data.status_code}')
         if node_response_data.status_code >= 300:
             print('Failed to create nodes, pseudo controller will stop now.')
             return False
@@ -130,6 +132,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
         vpc_response = requests.post(
             zgc_api_url + "/vpcs", data=json.dumps(VPC_data), headers=headers)
         print(f'Response for adding VPC: {vpc_response.text}')
+        print(f'Response for adding VPC status code: {vpc_response.status_code}')
         if vpc_response.status_code >= 300:
             print('Failed to create vpc, pseudo controller will stop now.')
             return False
@@ -167,6 +170,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
         one_call_start_time = time.time()
         port_response = requests.post(
             zgc_api_url + "/ports", data=json.dumps(PORT_data[start_idx: end_idx]), headers=headers)
+        print(f'Response for adding Ports status code: {port_response.status_code}')
         if port_response.status_code >= 300:
             print(
                 f'Call failed for index {start_idx} to {end_idx}, \nstatus code: {port_response.status_code}, \ncontent: {port_response.content}\nExiting')

@@ -14,7 +14,7 @@
     "description": "ZGC_test106",
     "ip_start": "192.168.20.100",
     "ip_end": "192.168.20.115",
-    "port_ibo": "8300",
+    "port_ibo": 8300,
     "overlay_type": "vxlan"
   },
   "VPC_data": [
