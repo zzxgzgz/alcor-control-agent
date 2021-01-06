@@ -20,7 +20,7 @@
 #include "aca_ovs_l2_programmer.h"
 #include "aca_comm_mgr.h"
 #include "aca_zeta_programming.h"
-#include "aca_util.h"
+#include "aca_ovs_control.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -30,6 +30,7 @@ using namespace aca_comm_manager;
 using namespace alcor::schema;
 using namespace aca_zeta_programming;
 using namespace aca_ovs_l2_programmer;
+using namespace aca_ovs_control;
 
 extern string vmac_address_1;
 extern string vmac_address_2;
@@ -181,10 +182,17 @@ void aca_test_zeta_setup(string zeta_gateway_path_config_file)
 
   nlohmann::json port_response_array = zeta_data["port_response"];
 
+  string mac_port_to_check = "";
+
+  int counter = 0 ; 
   for (nlohmann::json::iterator it = port_response_array.begin();
        it != port_response_array.end(); ++it) {
     string ip_node = (*it)["ip_node"];
     if (aca_is_port_on_same_host(ip_node)) { //  if this ip_node is an ip on one of the interfaces on this machine ...
+      if (counter == 0){
+        counter ++;
+        mac_port_to_check = it["mac_port"];
+      }
       cout << "IP: " << ip_node
            << " is on this same machine, add port states to it." << endl;
       PortState *new_port_states = GoalState_builder.add_port_states();
@@ -196,6 +204,9 @@ void aca_test_zeta_setup(string zeta_gateway_path_config_file)
   GoalStateOperationReply gsOperationalReply;
   overall_rc = Aca_Comm_Manager::get_instance().update_goal_state(
           GoalState_builder, gsOperationalReply);
+
+  // validate the first flow
+  overall_rc = ACA_OVS_Control::get_instance().flow_exists("br-tun", mac_port_to_check);
   ASSERT_EQ(overall_rc, EXIT_SUCCESS);
 }
 
@@ -339,6 +350,9 @@ TEST(zeta_programming_test_cases, DISABLED_zeta_scale_CHILD){
   // construct the GoalState from the json file
   string zeta_gateway_path_CHILD_config_file = "./test/gtest/aca_data.json";
   aca_test_zeta_setup(zeta_gateway_path_CHILD_config_file);
+
+  // do some validate
+
   // restore demo mode
   g_demo_mode = previous_demo_mode;
 }
@@ -364,6 +378,20 @@ TEST(zeta_programming_test_cases, DISABLED_zeta_scale_PARENT){
   // construct the GoalState from the json file
   string zeta_gateway_path_CHILD_config_file = "./test/gtest/aca_data.json";
   aca_test_zeta_setup(zeta_gateway_path_CHILD_config_file);
+
+  // do some validate
+  // ACA_OVS_Control::get_instance().flow_exists();
   // restore demo mode
   g_demo_mode = previous_demo_mode;
+
+  /** maybe we need to print out the counter here, so that when the next test prints out the updated counter, 
+   * we can compare and find out if the counter is  really updated.
+  **/
+}
+
+TEST(zeta_programming_test_cases, DISABLED_check_counter){
+  /** maybe we need to print out the counter here, so that when the next test prints out the updated counter, 
+   * we can compare and find out if the counter is  really updated.
+  **/
+
 }
