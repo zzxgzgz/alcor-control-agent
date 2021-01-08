@@ -370,14 +370,14 @@ def run():
         ping_result = {}
         if len(parent_ports) > 0 and len(child_ports) > 0:
             dump_flow_cmd = ["sudo ovs-ofctl dump-flows br-tun | grep group | awk -F ',' '{print $4}' | awk -F '=' '{print $2}'"]
-            result_before_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
+            result_before_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20, output=False)
             n_packets_before_ping = (result_before_ping['data'][0]).replace('\r','').replace('\n','').replace(aca_nodes_data['password'], '').replace(f'[sudo] password for {aca_nodes_data["username"]}:','').replace(' ','')
             print(f'n_packets before PING: {n_packets_before_ping}')
             ping_cmd = [f'ping -I {parent_ports[0]["ips_port"][0]["ip"]} -c1 {child_ports[0]["ips_port"][0]["ip"]}']
             print(f'Command for ping: {ping_cmd[0]}')
             ping_result = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=ping_cmd, timeout=20)
             exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
-            result_after_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
+            result_after_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20, output=False)
             n_packets_after_ping = (result_after_ping['data'][0]).replace('\r','').replace('\n','').replace(aca_nodes_data['password'], '').replace(f'[sudo] password for {aca_nodes_data["username"]}:','').replace(' ','')
             print(f'n_packets after PING: {n_packets_after_ping}')
             print(f'n_packets channged from {n_packets_before_ping} to {n_packets_after_ping}')
