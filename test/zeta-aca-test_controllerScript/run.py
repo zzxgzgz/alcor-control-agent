@@ -8,6 +8,7 @@ import itertools
 from math import ceil
 import threading
 import concurrent.futures
+import subprocess
 
 
 server_aca_repo_path = ''
@@ -46,7 +47,7 @@ def upload_file_aca(host, user, password, server_path, local_path, timeout=600):
 
 
 # Execute remote SSH commands
-def exec_sshCommand_aca(host, user, password, cmd, timeout=60):
+def exec_sshCommand_aca(host, user, password, cmd, timeout=60, output=True):
     """
     :param host
     :param user
@@ -79,8 +80,10 @@ def exec_sshCommand_aca(host, user, password, cmd, timeout=60):
             channel = stdout.channel
             status = channel.recv_exit_status()
             result['status'].append(status)
-            # result['data'].append(out1)
-            print(f'Output: {out2.decode()}')
+            result['data'].append(out2.decode())
+            if output:
+                print(f'Output: {result["data"]}')
+            print(f'command: {command} finished without errors')
         ssh.close()  # close ssh connection
         return result
     except Exception as e:
@@ -96,7 +99,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
     print(f'ZGC_data: \n{ZGC_data}')
     zgc_response = requests.post(
         zgc_api_url + "/zgcs", data=json.dumps(ZGC_data), headers=headers)
-    print(f'zgc creation response: \n{zgc_response.text}')
+    print(f'Response status code for adding ZGC: \n{zgc_response.status_code}')
     if zgc_response.status_code >= 300:
             print('Failed to create zgc, pseudo controller will stop now.')
             return False
@@ -109,7 +112,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
         print(f'node_data: \n{node_data}')
         node_response_data = requests.post(
             zgc_api_url + "/nodes", data=json.dumps(node_data), headers=headers)
-        print(f'Response for adding node: {node_response_data.text}')
+        print(f'Response status code for adding node: {node_response_data.status_code}')
         if node_response_data.status_code >= 300:
             print('Failed to create nodes, pseudo controller will stop now.')
             return False
@@ -129,7 +132,7 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
         print(f'VPC_data: \n{VPC_data}')
         vpc_response = requests.post(
             zgc_api_url + "/vpcs", data=json.dumps(VPC_data), headers=headers)
-        print(f'Response for adding VPC: {vpc_response.text}')
+        print(f'Response status code for adding VPC: {vpc_response.status_code}')
         if vpc_response.status_code >= 300:
             print('Failed to create vpc, pseudo controller will stop now.')
             return False
@@ -137,8 +140,8 @@ def talk_to_zeta(file_path, zgc_api_url, zeta_data, port_api_upper_limit, time_i
 
     # second delay
     # TODO: Check if this can be removed.
-    print('Sleep 60 seconds after the VPC call')
-    time.sleep(60)
+    print('Sleep 10 seconds after the VPC call')
+    time.sleep(10)
     print('Start calling /ports API')
 
     # notify ZGC the ports created on each ACA
@@ -273,7 +276,11 @@ def run():
 
     testcases_to_run = ['DISABLED_zeta_gateway_path_CHILD',
                         'DISABLED_zeta_gateway_path_PARENT']
-    execute_ping = False
+
+    ## temperarily defaulting the tests to run to be the scale tests. And always PING                
+    testcases_to_run = ['DISABLED_zeta_scale_CHILD',
+                                'DISABLED_zeta_scale_PARENT']
+    execute_ping = True
     # second argument should be amount of ports to be generated
     if len(arguments) > 1:
         ports_to_create = int(arguments[1])
@@ -308,6 +315,8 @@ def run():
         print(
             f'Set time interval between /nodes POST calls to be {arg3} seconds.')
 
+    subprocess.call(['/home/user/ws/zeta/deploy/zeta_deploy.sh', '-d',  'lab'])
+    
     json_content_for_aca = talk_to_zeta(file_path, zgc_api_url, zeta_data,
                  port_api_upper_limit, time_interval_between_calls_in_seconds)
 
@@ -335,17 +344,19 @@ def run():
         f'cd {server_aca_repo_path};sudo ./build/tests/aca_tests --gtest_also_run_disabled_tests --gtest_filter=*{testcases_to_run[1]}']
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_child = executor.submit(exec_sshCommand_aca, aca_nodes[1], aca_nodes_data['username'], aca_nodes_data['password'], cmd_child, 1500)
-        future_parent = executor.submit(exec_sshCommand_aca, aca_nodes[0], aca_nodes_data['username'], aca_nodes_data['password'], cmd_parent, 1500)
+        print(f'Setting up VPCs and PORTs for node {aca_nodes[1]}')
+        future_child = executor.submit(exec_sshCommand_aca, aca_nodes[1], aca_nodes_data['username'], aca_nodes_data['password'], cmd_child, 1500, False)
+        print(f'Setting up VPCs and PORTs for node {aca_nodes[0]}')
+        future_parent = executor.submit(exec_sshCommand_aca, aca_nodes[0], aca_nodes_data['username'], aca_nodes_data['password'], cmd_parent, 1500, False)
         result_child = future_child.result()
         result_parent = future_parent.result()
         for status_code in result_child["status"]:
             if status_code != 0:
-                print(f'Child command: [{cmd_child}] failed, pseudo controller will stop now.')
+                print(f'Child command: [{cmd_child}] failed, output for command: \n{result_child["data"]} \npseudo controller will stop now.')
                 return
         for status_code in result_parent["status"]:
             if status_code != 0:
-                print(f'Parent command: [{cmd_parent}] failed, pseudo controller will stop now.')
+                print(f'Parent command: [{cmd_parent}] failed, output for command: \n{result_child["data"]} \n pseudo controller will stop now.')
                 return
     
     test_end_time = time.time()
@@ -357,9 +368,16 @@ def run():
         child_ports = [port for port in json_content_for_aca['port_response'] if (port['ip_node'].split('.'))[3] == (zeta_data['aca_nodes']['ip'][1].split('.'))[3]]
         ping_result = {}
         if len(parent_ports) > 0 and len(child_ports) > 0:
+            dump_flow_cmd = ["sudo ovs-ofctl dump-flows br-tun | grep group | awk -F ',' '{print $4}' | awk -F '=' '{print $2}'"]
+            result_before_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
+            print(f'n_packets before PING: {result_before_ping["data"]}')
             ping_cmd = [f'ping -I {parent_ports[0]["ips_port"][0]["ip"]} -c1 {child_ports[0]["ips_port"][0]["ip"]}']
             print(f'Command for ping: {ping_cmd[0]}')
             ping_result = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=ping_cmd, timeout=20)
+            exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
+            result_after_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
+            print(f'n_packets after PING: {result_after_ping["data"]}')
+            print(f'n_packets channged from {result_before_ping["data"]} to {result_after_ping["data"]}')
         else:
             print(f'Either parent or child does not have any ports, somethings wrong.')
         print(f'Ping succeeded: {ping_result["status"][0] == 0}')
