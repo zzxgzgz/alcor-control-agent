@@ -67,7 +67,7 @@ def exec_sshCommand_aca(host, user, password, cmd, timeout=60, output=True):
         ssh.connect(host, 22, user, password, timeout=timeout)
         for command in cmd:
             # execute command
-            print(f'executing command: {command}')
+            # print(f'executing command: {command}')
             stdin, stdout, stderr = ssh.exec_command(
                 command, get_pty=True, timeout=timeout)
             # If need password
@@ -84,7 +84,7 @@ def exec_sshCommand_aca(host, user, password, cmd, timeout=60, output=True):
             result['data'].append(cmd_output)
             if output:
                 print('Output: \n' + cmd_output)
-            print(f'command: {command} finished without errors')
+            # print(f'command: {command} finished without errors')
         ssh.close()  # close ssh connection
         return result
     except Exception as e:
@@ -376,7 +376,6 @@ def run():
             ping_cmd = [f'ping -I {parent_ports[0]["ips_port"][0]["ip"]} -c1 {child_ports[0]["ips_port"][0]["ip"]}']
             print(f'Command for ping: {ping_cmd[0]}')
             ping_result = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=ping_cmd, timeout=20)
-            exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20)
             result_after_ping = exec_sshCommand_aca(host=aca_nodes[0], user=aca_nodes_data['username'], password=aca_nodes_data['password'], cmd=dump_flow_cmd, timeout=20, output=False)
             n_packets_after_ping = (result_after_ping['data'][0]).replace('\r','').replace('\n','').replace(aca_nodes_data['password'], '').replace(f'[sudo] password for {aca_nodes_data["username"]}:','').replace(' ','')
             print(f'n_packets after PING: {n_packets_after_ping}')
