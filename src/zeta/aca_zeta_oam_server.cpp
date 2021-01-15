@@ -136,6 +136,11 @@ uint ACA_Zeta_Oam_Server::_get_tunnel_id(uint8_t *vni)
 
   // Convert tunnel_id to uint
   // from uint8[3] to uint
+  std::cout << "VNI uint8_t" << vni << std::endl;
+  std::cout << "VNI uint8_t [0]" << (uint)vni[0] << std::endl;
+  std::cout << "VNI uint8_t [1]" << (uint)vni[1] << std::endl;
+  std::cout << "VNI uint8_t [2]" << (uint)vni[2] << std::endl;
+
   tunnel_id = ((uint)vni[0]) | ((uint)vni[1]) << 8 | ((uint) vni[2]) << 16;
 
   return tunnel_id;
@@ -196,12 +201,14 @@ bool ACA_Zeta_Oam_Server::_check_oam_server_port(uint udp_dport, oam_match match
 
 void ACA_Zeta_Oam_Server::_parse_oam_flow_injection(uint udp_dport, oam_message *oammsg)
 {
+  std::cout<< "Inside _parse_oam_flow_injection, port " << udp_dport << ", oam_message inject vni: "<< oammsg->data.msg_inject_flow.vni << std::endl;
   int overall_rc;
 
   oam_match match = _get_oam_match_field(oammsg);
-
+  
   // check whether the udp_dport is the oam server port of the vpc
   if (!_check_oam_server_port(udp_dport, match)) {
+    std::cout << "_check_oam_server_port is false, port: " << udp_dport << ", match src port: " << match.sport << ", dst port: " << match.dport << ", vni: " << match.vni << ", function will now return" << std::endl;
     return;
   }
 
