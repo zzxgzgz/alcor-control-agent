@@ -136,16 +136,8 @@ uint ACA_Zeta_Oam_Server::_get_tunnel_id(uint8_t *vni)
 
   // Convert tunnel_id to uint
   // from uint8[3] to uint
-  std::cout << "VNI uint8_t" << vni << std::endl;
-  std::cout << "VNI uint8_t [0]" << (uint)vni[0] << std::endl;
-  std::cout << "VNI uint8_t [1]" << (uint)vni[1] << std::endl;
-  std::cout << "VNI uint8_t [2]" << (uint)vni[2] << std::endl;
+  tunnel_id = ((uint)vni[0]) << 16 | ((uint)vni[1]) << 8 | ((uint) vni[2]);
 
-  tunnel_id = ((uint)vni[0]) | ((uint)vni[1]) << 8 | ((uint) vni[2]) << 16;
-  std::cout << "tunnel id with old code: " << tunnel_id << std::endl;
-  // tunnel_id = (uint)vni[0] * 16 * 16 * 16 + (uint)vni[1] * 16 * 16 + (uint)vni[2] * 16 ;
-  tunnel_id = ((uint)vni[0]) <<24 | ((uint)vni[1]) << 16 | ((uint) vni[2]) << 8;
-  std::cout << "tunnel id with new code: " << tunnel_id << std::endl;
   return tunnel_id;
 }
 
