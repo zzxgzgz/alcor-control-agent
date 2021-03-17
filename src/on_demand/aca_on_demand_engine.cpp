@@ -60,9 +60,11 @@ ACA_On_Demand_Engine &ACA_On_Demand_Engine::get_instance()
 }
 
 void ACA_On_Demand_Engine::unknown_recv(uint16_t vlan_id, string ip_src, string ip_dest,
-                                        int port_src, int port_dest, Protocol protocol) {
+                                        int port_src, int port_dest, Protocol protocol)
+{
   HostRequest HostRequest_builder;
-  HostRequest_ResourceStateRequest *new_state_requests = HostRequest_builder.add_state_requests();
+  HostRequest_ResourceStateRequest *new_state_requests =
+          HostRequest_builder.add_state_requests();
   HostRequestReply hostRequestReply;
 
   uuid_t uuid;
@@ -78,11 +80,10 @@ void ACA_On_Demand_Engine::unknown_recv(uint16_t vlan_id, string ip_src, string 
   new_state_requests->set_destination_port(port_dest);
   new_state_requests->set_protocol(protocol);
   new_state_requests->set_ethertype(EtherType::IPV4);
-  
+
   hostRequestReply = g_grpc_server->RequestGoalStates(&HostRequest_builder);
 
-  hostRequestReply.operation_status()
-
+  hostRequestReply.operation_statuses();
 }
 
 void ACA_On_Demand_Engine::parse_packet(uint32_t in_port, void *packet)
@@ -126,10 +127,10 @@ void ACA_On_Demand_Engine::parse_packet(uint32_t in_port, void *packet)
     ACA_LOG_INFO("   From: %s\n", inet_ntoa(*(in_addr *)(base + 14 + vlan_len + 14)));
     ACA_LOG_INFO("     to: %s\n", inet_ntoa(*(in_addr *)(base + 14 + vlan_len + 14 + 10)));
     /* compute arp message offset */
-    unsigned char *arp_hdr= (unsigned char *)(base + SIZE_ETHERNET + vlan_len);
+    unsigned char *arp_hdr = (unsigned char *)(base + SIZE_ETHERNET + vlan_len);
     /* arp request procedure,type = 1 */
-    if(ntohs(*(uint16_t *)(arp_hdr + 6)) == 0x0001){
-      aca_arp_responder::ACA_ARP_Responder::get_instance().arp_recv(in_port,vlan_hdr,arp_hdr);
+    if (ntohs(*(uint16_t *)(arp_hdr + 6)) == 0x0001) {
+      aca_arp_responder::ACA_ARP_Responder::get_instance().arp_recv(in_port, vlan_hdr, arp_hdr);
     }
   } else if (ether_type == ETHERTYPE_IP) {
     ACA_LOG_INFO("%s", "Ethernet Type: IP (0x0800) \n");

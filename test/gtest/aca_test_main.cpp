@@ -20,6 +20,7 @@
 #include "aca_message_pulsar_producer.h"
 #include <unistd.h> /* for getopt */
 #include <grpcpp/grpcpp.h>
+#include <thread>
 
 using namespace std;
 using namespace aca_message_pulsar;
@@ -27,6 +28,7 @@ using namespace aca_message_pulsar;
 #define ACALOGNAME "AlcorControlAgentTest"
 
 // Global variables
+std::thread *g_grpc_server_thread = NULL;
 static char EMPTY_STRING[] = "";
 string g_ofctl_command = EMPTY_STRING;
 string g_ofctl_target = EMPTY_STRING;
@@ -142,8 +144,14 @@ int main(int argc, char **argv)
 
   testing::InitGoogleTest(&argc, argv);
 
-  while ((option = getopt(argc, argv, "p:c:n:")) != -1) {
+  while ((option = getopt(argc, argv, "p:c:n:a:q:")) != -1) {
     switch (option) {
+    case 'a':
+      g_ncm_address = optarg;
+      break;
+    case 'q':
+      g_ncm_port = optarg;
+      break;
     case 'p':
       remote_ip_1 = optarg;
       break;
@@ -156,13 +164,20 @@ int main(int argc, char **argv)
     default: /* the '?' case when the option is not recognized */
       fprintf(stderr,
               "Usage: %s\n"
-              "\t\t[-m parent machine IP]\n"
+              "\t\t[-a NCM IP Address]\n"
+              "\t\t[-q NCM Port]\n"
+              "\t\t[-p parent machine IP]\n"
               "\t\t[-c child machine IP]\n"
               "\t\t[-n neighbors to create (default: 10)]\n",
               argv[0]);
       exit(EXIT_FAILURE);
     }
   }
+
+  g_grpc_server = new GoalStateProvisionerImpl();
+  g_grpc_server_thread =
+          new std::thread(std::bind(&GoalStateProvisionerImpl::RunServer, g_grpc_server));
+  g_grpc_server_thread->detach();
 
   int rc = RUN_ALL_TESTS();
 
