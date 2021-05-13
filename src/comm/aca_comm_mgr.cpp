@@ -168,8 +168,9 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
   ACA_LOG_DEBUG("Starting to update goal state with format_version: %u\n",
                 goal_state_message.format_version());
 
-  ACA_LOG_INFO("[METRICS] Goal state message size is: %lu bytes\n",
-               goal_state_message.ByteSizeLong());
+  ACA_LOG_INFO("[METRICS] Goal state message size is: %lu bytes, router_state_size: [%d]\n",
+               goal_state_message.ByteSizeLong(),
+               goal_state_message.router_states_size());
 
   this->print_goal_state(goal_state_message);
 
