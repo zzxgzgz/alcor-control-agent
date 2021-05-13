@@ -183,6 +183,9 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
       rc = exec_command_rc;
     }
   }
+  auto router_update_finished_time = chrono::steady_clock::now();
+  auto router_operation_time =
+          cast_to_microseconds(router_update_finished_time - start).count();
 
   if (goal_state_message.port_states_size() > 0) {
     exec_command_rc = Aca_Goal_State_Handler::get_instance().update_port_states(
@@ -197,7 +200,10 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
       rc = exec_command_rc;
     }
   }
-
+  auto port_update_finished_time = chrono::steady_clock::now();
+  auto port_operation_time =
+          cast_to_microseconds(port_update_finished_time - router_update_finished_time)
+                  .count();
   if (goal_state_message.neighbor_states_size() > 0) {
     exec_command_rc = Aca_Goal_State_Handler::get_instance().update_neighbor_states(
             goal_state_message, gsOperationReply);
@@ -208,7 +214,10 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
       rc = exec_command_rc;
     }
   }
-
+  auto neighbor_update_finished_time = chrono::steady_clock::now();
+  auto neighbor_operation_time =
+          cast_to_microseconds(neighbor_update_finished_time - port_update_finished_time)
+                  .count();
   exec_command_rc = Aca_Dhcp_State_Handler::get_instance().update_dhcp_states(
           goal_state_message, gsOperationReply);
   if (exec_command_rc != EXIT_SUCCESS) {
@@ -217,11 +226,16 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
   }
 
   auto end = chrono::steady_clock::now();
-
+  auto dhcp_operation_time =
+          cast_to_microseconds(end - neighbor_update_finished_time).count();
   auto message_total_operation_time = cast_to_microseconds(end - start).count();
 
-  ACA_LOG_INFO("[METRICS] Elapsed time for message total operation took: %ld microseconds or %ld milliseconds\n",
-               message_total_operation_time, us_to_ms(message_total_operation_time));
+  ACA_LOG_INFO("[METRICS] Elapsed time for message total operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for router operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for port operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for neighbor operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for dhcp operation took: %ld microseconds or %ld milliseconds\n",
+               message_total_operation_time, us_to_ms(message_total_operation_time),
+               router_operation_time, us_to_ms(router_operation_time),
+               port_operation_time, us_to_ms(port_operation_time),
+               neighbor_operation_time, us_to_ms(neighbor_operation_time),
+               dhcp_operation_time, us_to_ms(dhcp_operation_time));
 
   gsOperationReply.set_message_total_operation_time(
           message_total_operation_time + gsOperationReply.message_total_operation_time());
