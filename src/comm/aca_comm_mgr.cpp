@@ -173,6 +173,8 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
 
   this->print_goal_state(goal_state_message);
 
+  auto gs_printout_finished_time = chrono::steady_clock::now();
+
   if (goal_state_message.router_states_size() > 0) {
     exec_command_rc = Aca_Goal_State_Handler::get_instance().update_router_states(
             goal_state_message, gsOperationReply);
@@ -185,7 +187,8 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
   }
   auto router_update_finished_time = chrono::steady_clock::now();
   auto router_operation_time =
-          cast_to_microseconds(router_update_finished_time - start).count();
+          cast_to_microseconds(router_update_finished_time - gs_printout_finished_time)
+                  .count();
 
   if (goal_state_message.port_states_size() > 0) {
     exec_command_rc = Aca_Goal_State_Handler::get_instance().update_port_states(
