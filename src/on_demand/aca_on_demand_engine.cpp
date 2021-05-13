@@ -263,11 +263,15 @@ void ACA_On_Demand_Engine::on_demand(string uuid_for_call, OperationStatus statu
       auto total_time_slept = cast_to_microseconds(end - start).count();
       auto total_time_for_goalstate_from_send_gs_to_gs_received_and_programmed =
               cast_to_microseconds(end - insert_time).count();
-      ACA_LOG_DEBUG("For UUID: [%s], wait started at: [%ld] finished at: [%ld], took: %ld microseconds or %ld milliseconds\nThe whole operation took %ld microseconds or %ld milliseconds",
-                    uuid_for_call.c_str(), start, end, total_time_slept,
-                    us_to_ms(total_time_slept),
-                    total_time_for_goalstate_from_send_gs_to_gs_received_and_programmed,
-                    us_to_ms(total_time_for_goalstate_from_send_gs_to_gs_received_and_programmed));
+      auto total_time_before_sending_grpc_request_to_before_wait_starts =
+              cast_to_microseconds(start - insert_time).count();
+      ACA_LOG_DEBUG(
+              "For UUID: [%s], wait started at: [%ld] finished at: [%ld], took: %ld microseconds or %ld milliseconds\nThe whole operation took %ld microseconds or %ld milliseconds\nFrom before sending GRPC request to before waiting for GS ready (T3 - T1) took %ld microseconds or %ld milliseconds",
+              uuid_for_call.c_str(), start, end, total_time_slept, us_to_ms(total_time_slept),
+              total_time_for_goalstate_from_send_gs_to_gs_received_and_programmed,
+              us_to_ms(total_time_for_goalstate_from_send_gs_to_gs_received_and_programmed),
+              total_time_before_sending_grpc_request_to_before_wait_starts,
+              us_to_ms(total_time_before_sending_grpc_request_to_before_wait_starts));
 
       int parse_arp_request_rc =
               aca_arp_responder::ACA_ARP_Responder::get_instance()._parse_arp_request(

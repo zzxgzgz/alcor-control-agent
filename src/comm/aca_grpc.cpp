@@ -151,6 +151,9 @@ void GoalStateProvisionerImpl::RunServer()
 {
   this->ConnectToNCM();
   ServerBuilder builder;
+  // Try to unlimit the size of goalstate received.
+  builder.SetMaxMessageSize(INT_MAX);
+  builder.SetMaxReceiveMessageSize(INT_MAX);
   string GRPC_SERVER_ADDRESS = "0.0.0.0:" + g_grpc_server_port;
   builder.AddListeningPort(GRPC_SERVER_ADDRESS, grpc::InsecureServerCredentials());
   builder.RegisterService(this);

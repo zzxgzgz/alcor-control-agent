@@ -123,10 +123,9 @@ int ACA_OVS_L2_Programmer::setup_ovs_bridges_if_need()
 
     // adding default flows
     // details at: https://github.com/futurewei-cloud/alcor-control-agent/wiki/Openflow-Tables-Explain
-    
-    execute_openflow_command(
-          "add-flow br-tun \"table=0,priority=50,arp,arp_op=1, actions=CONTROLLER\"",
-          not_care_culminative_time, overall_rc);
+
+    execute_openflow_command("add-flow br-tun \"table=0,priority=50,arp,arp_op=1, actions=CONTROLLER\"",
+                             not_care_culminative_time, overall_rc);
 
     execute_openflow_command("add-flow br-tun \"table=0,priority=1,in_port=\"patch-int\" actions=resubmit(,2)\"",
                              not_care_culminative_time, overall_rc);
@@ -376,8 +375,9 @@ void ACA_OVS_L2_Programmer::execute_ovsdb_command(const std::string cmd_string,
 
   g_total_execute_ovsdb_time += ovsdb_client_time_total_time;
 
-  ACA_LOG_INFO("Elapsed time for ovsdb client call took: %ld microseconds or %ld milliseconds. rc: %d\n",
-               ovsdb_client_time_total_time, us_to_ms(ovsdb_client_time_total_time), rc);
+  ACA_LOG_INFO("Elapsed time for ovsdb client call took: %ld microseconds or %ld milliseconds. rc: %d, cmd: [%s]\n",
+               ovsdb_client_time_total_time, us_to_ms(ovsdb_client_time_total_time),
+               rc, ovsdb_cmd_string.c_str());
 
   ACA_LOG_DEBUG("ACA_OVS_L2_Programmer::execute_ovsdb_command <--- Exiting, rc = %d\n", rc);
 }

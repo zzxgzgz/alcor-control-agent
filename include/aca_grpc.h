@@ -31,7 +31,7 @@ class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
   public:
   std::unique_ptr<GoalStateProvisioner::Stub> stub_;
   std::shared_ptr<grpc_impl::Channel> chan_;
-  
+
   void RequestGoalStates(HostRequest *request, grpc::CompletionQueue *cq);
 
   // ~GoalStateProvisionerImpl();
