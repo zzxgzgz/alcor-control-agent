@@ -175,6 +175,8 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
   this->print_goal_state(goal_state_message);
 
   auto gs_printout_finished_time = chrono::steady_clock::now();
+  auto gs_printout_operation_time =
+          cast_to_microseconds(gs_printout_finished_time - start).count();
 
   if (goal_state_message.router_states_size() > 0) {
     exec_command_rc = Aca_Goal_State_Handler::get_instance().update_router_states(
@@ -234,8 +236,9 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
           cast_to_microseconds(end - neighbor_update_finished_time).count();
   auto message_total_operation_time = cast_to_microseconds(end - start).count();
 
-  ACA_LOG_INFO("[METRICS] Elapsed time for message total operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for router operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for port operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for neighbor operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for dhcp operation took: %ld microseconds or %ld milliseconds\n",
+  ACA_LOG_INFO("[METRICS] Elapsed time for message total operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for gs printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for router operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for port operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for neighbor operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for dhcp operation took: %ld microseconds or %ld milliseconds\n",
                message_total_operation_time, us_to_ms(message_total_operation_time),
+               gs_printout_operation_time, us_to_ms(gs_printout_operation_time),
                router_operation_time, us_to_ms(router_operation_time),
                port_operation_time, us_to_ms(port_operation_time),
                neighbor_operation_time, us_to_ms(neighbor_operation_time),
