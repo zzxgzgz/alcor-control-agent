@@ -1034,7 +1034,7 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
   }
   auto router_printout_finished_time = chrono::steady_clock::now();
   auto router_printout_elapsed_time =
-          cast_to_microseconds(router_printout_finished_time - sg_printout_finished_time)
+          cast_to_microseconds(router_printout_finished_time - dhcp_printout_finished_time)
                   .count();
   for (auto &[gateway_id, current_gateway_State] : parsed_struct.gateway_states()) {
     fprintf(stdout, "current_gateway_State.operation_type(): %s\n",
