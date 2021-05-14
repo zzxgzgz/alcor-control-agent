@@ -164,7 +164,7 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
   int exec_command_rc;
   int rc = EXIT_SUCCESS;
   auto start = chrono::steady_clock::now();
-
+  auto t0 = std::chrono::high_resolution_clock::now();
   ACA_LOG_DEBUG("Starting to update goal state with format_version: %u\n",
                 goal_state_message.format_version());
 
@@ -173,7 +173,9 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
                goal_state_message.router_states_size());
 
   this->print_goal_state(goal_state_message);
+  auto nanosec = t0.time_since_epoch();
 
+  ACA_LOG_INFO("Printout took: [%ld] nanoseconds\n", nanosec.count());
   auto gs_printout_finished_time = chrono::steady_clock::now();
   auto gs_printout_operation_time =
           cast_to_microseconds(gs_printout_finished_time - start).count();
