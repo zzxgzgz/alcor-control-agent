@@ -655,6 +655,7 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
   if (g_debug_mode == false) {
     return;
   }
+  auto start = chrono::steady_clock::now();
 
   for (auto &[vpc_id, current_VpcState] : parsed_struct.vpc_states()) {
     fprintf(stdout, "current_VpcState.operation_type(): %s\n",
@@ -696,7 +697,9 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto vpc_printout_finished_time = chrono::steady_clock::now();
+  auto vpc_printout_elapsed_time =
+          cast_to_microseconds(vpc_printout_finished_time - start).count();
   for (auto &[subnet_id, current_SubnetState] : parsed_struct.subnet_states()) {
     fprintf(stdout, "current_SubnetState.operation_type(): %s\n",
             aca_get_operation_string(current_SubnetState.operation_type()));
@@ -755,7 +758,10 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto subnet_printout_finished_time = chrono::steady_clock::now();
+  auto subnet_printout_elapsed_time =
+          cast_to_microseconds(subnet_printout_finished_time - vpc_printout_finished_time)
+                  .count();
   for (auto &[port_id, current_PortState] : parsed_struct.port_states()) {
     fprintf(stdout, "current_PortState.operation_type(): %s\n",
             aca_get_operation_string(current_PortState.operation_type()));
@@ -820,7 +826,10 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto port_printout_finished_time = chrono::steady_clock::now();
+  auto port_printout_elapsed_time =
+          cast_to_microseconds(port_printout_finished_time - subnet_printout_finished_time)
+                  .count();
   for (auto &[neighbor_id, current_NeighborState] : parsed_struct.neighbor_states()) {
     fprintf(stdout, "current_NeighborState.operation_type(): %s\n",
             aca_get_operation_string(current_NeighborState.operation_type()));
@@ -871,7 +880,10 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto neighbor_printout_finished_time = chrono::steady_clock::now();
+  auto neighbor_printout_elapsed_time =
+          cast_to_microseconds(neighbor_printout_finished_time - port_printout_finished_time)
+                  .count();
   for (auto &[security_group_id, current_security_group_State] :
        parsed_struct.security_group_states()) {
     fprintf(stdout, "current_security_group_State.operation_type(): %s\n",
@@ -926,7 +938,10 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto sg_printout_finished_time = chrono::steady_clock::now();
+  auto sg_printout_elapsed_time =
+          cast_to_microseconds(sg_printout_finished_time - neighbor_printout_finished_time)
+                  .count();
   for (auto &[dhcp_id, current_dhcp_State] : parsed_struct.dhcp_states()) {
     fprintf(stdout, "current_dhcp_State.operation_type(): %s\n",
             aca_get_operation_string(current_dhcp_State.operation_type()));
@@ -956,7 +971,10 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto dhcp_printout_finished_time = chrono::steady_clock::now();
+  auto dhcp_printout_elapsed_time =
+          cast_to_microseconds(dhcp_printout_finished_time - sg_printout_finished_time)
+                  .count();
   for (auto &[router_id, current_router_State] : parsed_struct.router_states()) {
     fprintf(stdout, "current_router_State.operation_type(): %s\n",
             aca_get_operation_string(current_router_State.operation_type()));
@@ -1014,7 +1032,10 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
-
+  auto router_printout_finished_time = chrono::steady_clock::now();
+  auto router_printout_elapsed_time =
+          cast_to_microseconds(router_printout_finished_time - sg_printout_finished_time)
+                  .count();
   for (auto &[gateway_id, current_gateway_State] : parsed_struct.gateway_states()) {
     fprintf(stdout, "current_gateway_State.operation_type(): %s\n",
             aca_get_operation_string(current_gateway_State.operation_type()));
@@ -1043,6 +1064,25 @@ void Aca_Comm_Manager::print_goal_state(GoalStateV2 parsed_struct)
 
     printf("\n");
   }
+  auto gw_printout_finished_time = chrono::steady_clock::now();
+  auto gw_printout_elapsed_time =
+          cast_to_microseconds(gw_printout_finished_time - router_printout_finished_time)
+                  .count();
+
+  auto end = chrono::steady_clock::now();
+
+  auto message_total_operation_time = cast_to_microseconds(end - start).count();
+
+  ACA_LOG_INFO("[METRICS] Elapsed time for goalstateV2 printout took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for vpc printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for subnet printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for port printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for neighbor printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for security group printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for dhcp printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for router printout operation took: %ld microseconds or %ld milliseconds\n[METRICS] Elapsed time for gateway printout operation took: %ld microseconds or %ld milliseconds\n",
+               message_total_operation_time, us_to_ms(message_total_operation_time),
+               vpc_printout_elapsed_time, us_to_ms(vpc_printout_elapsed_time),
+               subnet_printout_elapsed_time, us_to_ms(subnet_printout_elapsed_time),
+               port_printout_elapsed_time, us_to_ms(port_printout_elapsed_time),
+               neighbor_printout_elapsed_time, us_to_ms(neighbor_printout_elapsed_time),
+               sg_printout_elapsed_time, us_to_ms(sg_printout_elapsed_time),
+               dhcp_printout_elapsed_time, us_to_ms(dhcp_printout_elapsed_time),
+               router_printout_elapsed_time, us_to_ms(router_printout_elapsed_time),
+               gw_printout_elapsed_time, us_to_ms(gw_printout_elapsed_time));
 }
 
 } // namespace aca_comm_manager
