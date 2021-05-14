@@ -173,9 +173,10 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
                goal_state_message.router_states_size());
 
   this->print_goal_state(goal_state_message);
-  auto nanosec = t0.time_since_epoch();
+  //   auto nanosec = t0.time_since_epoch();
+  auto t1 = std::chrono::high_resolution_clock::now();
 
-  ACA_LOG_INFO("Printout took: [%ld] nanoseconds\n", nanosec.count());
+  ACA_LOG_INFO("[METRICS] Printout took: [%ld] nanoseconds\n", (t1 - t0).count());
   auto gs_printout_finished_time = chrono::steady_clock::now();
   auto gs_printout_operation_time =
           cast_to_microseconds(gs_printout_finished_time - start).count();
