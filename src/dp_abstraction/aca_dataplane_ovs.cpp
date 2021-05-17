@@ -371,7 +371,7 @@ int ACA_Dataplane_OVS::update_port_state_workitem(const PortState current_PortSt
 
     assert(!current_PortConfiguration.id().empty());
 
-    generated_port_name = current_PortConfiguration.name(); //aca_get_port_name(current_PortConfiguration.id());
+    generated_port_name = aca_get_port_name(current_PortConfiguration.id());
 
     if (!aca_validate_fixed_ips_size(current_PortConfiguration.fixed_ips_size())) {
       throw std::invalid_argument("PortConfiguration.fixed_ips_size is less than zero");
