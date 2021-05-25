@@ -83,7 +83,7 @@ int Aca_Comm_Manager::update_goal_state(GoalState &goal_state_message,
   ACA_LOG_INFO("[METRICS] Goal state message size is: %lu bytes\n",
                goal_state_message.ByteSizeLong());
 
-  this->print_goal_state(goal_state_message);
+  //  this->print_goal_state(goal_state_message);
 
   if (goal_state_message.router_states_size() > 0) {
     exec_command_rc = Aca_Goal_State_Handler::get_instance().update_router_states(
@@ -172,7 +172,7 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
                goal_state_message.ByteSizeLong(),
                goal_state_message.router_states_size());
 
-  this->print_goal_state(goal_state_message);
+  //   this->print_goal_state(goal_state_message);
   //   auto nanosec = t0.time_since_epoch();
   auto t1 = std::chrono::high_resolution_clock::now();
 
