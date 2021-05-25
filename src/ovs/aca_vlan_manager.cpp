@@ -206,15 +206,8 @@ int ACA_Vlan_Manager::create_l2_neighbor(string virtual_ip, string virtual_mac,
   stArpCfg.mac_address = virtual_mac;
   stArpCfg.ipv4_address = virtual_ip;
   stArpCfg.vlan_id = internal_vlan_id;
-  std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
 
   ACA_ARP_Responder::get_instance().create_or_update_arp_entry(&stArpCfg);
-  std::chrono::_V2::steady_clock::time_point end = std::chrono::steady_clock::now();
-  auto message_total_operation_time =
-          std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ACA_LOG_INFO("[create_l2_neighbor] Start adding arp entry at: [%ld], finished at: [%ld]\nElapsed time for arp entry took: %ld microseconds or %ld milliseconds\n",
-               start, end, message_total_operation_time,
-               (message_total_operation_time / 1000));
 
   ACA_LOG_DEBUG("create_l2_neighbor arp entry with ip = %s, vlan id = %u and mac = %s\n",
                 virtual_ip.c_str(), internal_vlan_id, virtual_mac.c_str());
