@@ -122,6 +122,8 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
   ACA_LOG_DEBUG("%s\n", "Beginning of process_async_grpc_replies");
 
   while (_cq.Next(&got_tag, &ok)) {
+    std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
+            std::chrono::high_resolution_clock::now();
     if (ok) {
       ACA_LOG_DEBUG("%s\n", "_cq->Next is good, ready to static cast the Async Client Call");
 
@@ -143,11 +145,11 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
           ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
                         request_id.c_str(), request_payload->in_port,
                         request_payload->protocol);
-          std::chrono::_V2::steady_clock::time_point now =
-                  std::chrono::steady_clock::now();
+
           ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
                         request_id.c_str(),
-                        chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch())
+                        chrono::duration_cast<chrono::milliseconds>(
+                                received_ncm_reply_time.time_since_epoch())
                                 .count());
           ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
 
@@ -195,10 +197,12 @@ void ACA_On_Demand_Engine::unknown_recv(uint16_t vlan_id, string ip_src,
   new_state_requests->set_destination_port(port_dest);
   new_state_requests->set_protocol(protocol);
   new_state_requests->set_ethertype(EtherType::IPV4);
-  std::chrono::_V2::steady_clock::time_point now = std::chrono::steady_clock::now();
-  ACA_LOG_DEBUG("For UUID [%s], calling NCM for info of IP [%s] at: [%ld], tunnel_id: []",
-                uuid_str, ip_dest.c_str(), now, tunnel_id);
-  std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
+  std::chrono::_V2::steady_clock::time_point call_ncm_time =
+          std::chrono::steady_clock::now();
+  ACA_LOG_DEBUG("For UUID: [%s], calling NCM for info of IP [%s] at: [%ld], tunnel_id: []\n",
+                uuid_str, ip_dest.c_str(), call_ncm_time, tunnel_id);
+  std::chrono::_V2::high_resolution_clock::time_point start =
+          std::chrono::high_resolution_clock::now();
   // this is a timestamp in milliseconds
   ACA_LOG_DEBUG(
           "For UUID: [%s], on-demand sent on %ld milliseconds\n", uuid_str,
