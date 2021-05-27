@@ -145,8 +145,10 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
                         request_payload->protocol);
           std::chrono::_V2::steady_clock::time_point now =
                   std::chrono::steady_clock::now();
-          ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: [%ld]\n",
-                        request_id.c_str(), now);
+          ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
+                        request_id.c_str(),
+                        chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch())
+                                .count());
           ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
 
           on_demand(request_id, replyStatus, request_payload->in_port,
@@ -196,7 +198,11 @@ void ACA_On_Demand_Engine::unknown_recv(uint16_t vlan_id, string ip_src,
   std::chrono::_V2::steady_clock::time_point now = std::chrono::steady_clock::now();
   ACA_LOG_DEBUG("For UUID [%s], calling NCM for info of IP [%s] at: [%ld], tunnel_id: []",
                 uuid_str, ip_dest.c_str(), now, tunnel_id);
-
+  std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
+  // this is a timestamp in milliseconds
+  ACA_LOG_DEBUG(
+          "For UUID: [%s], on-demand sent on %ld milliseconds\n", uuid_str,
+          chrono::duration_cast<chrono::milliseconds>(start.time_since_epoch()).count());
   g_grpc_server->RequestGoalStates(&HostRequest_builder, &_cq);
 }
 
@@ -265,6 +271,7 @@ void ACA_On_Demand_Engine::on_demand(string uuid_for_call, OperationStatus statu
               cast_to_microseconds(end - insert_time).count();
       auto total_time_before_sending_grpc_request_to_before_wait_starts =
               cast_to_microseconds(start - insert_time).count();
+
       ACA_LOG_DEBUG(
               "For UUID: [%s], wait started at: [%ld] finished at: [%ld], took: %ld microseconds or %ld milliseconds\nThe whole operation took %ld microseconds or %ld milliseconds\nFrom before sending GRPC request to before waiting for GS ready (T3 - T1) took %ld microseconds or %ld milliseconds",
               uuid_for_call.c_str(), start, end, total_time_slept, us_to_ms(total_time_slept),
