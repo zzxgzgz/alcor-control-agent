@@ -398,15 +398,8 @@ int OVS_Control::flow_mod(const char *bridge, const char *flow, unsigned short i
                bridge, flow, command);
 
   auto openflow_client_start = chrono::steady_clock::now();
-  std::chrono::_V2::steady_clock::time_point start_1 = std::chrono::steady_clock::now();
   error = parse_ofp_flow_mod_str(&fm, flow, ports_to_accept(bridge),
                                  tables_to_accept(bridge), command, &usable_protocols);
-  std::chrono::_V2::steady_clock::time_point end_1 = std::chrono::steady_clock::now();
-  auto message_total_operation_time_1 =
-          std::chrono::duration_cast<std::chrono::microseconds>(end_1 - start_1).count();
-  ACA_LOG_INFO("[flow_mod] Start parse_ofp_flow_mod_str at: [%ld], finished at: [%ld]\nElapsed time for parse_ofp_flow_mod_str took: %ld microseconds or %ld milliseconds\n",
-               start_1, end_1, message_total_operation_time_1,
-               (message_total_operation_time_1 / 1000));
   if (error) {
     // ovs_fatal(0, "%s", error);
     ACA_LOG_ERROR("%s", error);
