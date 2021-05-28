@@ -96,6 +96,16 @@ Status GoalStateProvisionerImpl::PushGoalStatesStream(
   while (stream->Read(&goalStateV2)) {
     std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
 
+    if (goalStateV2.neighbor_states_size() == 1) {
+      // if there's only one neighbor state, it means that it is pushed
+      // because of the on-demand request
+      auto received_gs_time_high_res = std::chrono::high_resolution_clock::now();
+      auto neighbor_id = goalStateV2.neighbor_states().at(0).configuration().id();
+      ACA_LOG_INFO("Neighbor ID: %s received at: %ld milliseconds\n", neighbor_id,
+                   std::chrono::duration_cast<std::chrono::milliseconds>(
+                           received_gs_time_high_res.time_since_epoch())
+                           .count());
+    }
     rc = Aca_Comm_Manager::get_instance().update_goal_state(goalStateV2, gsOperationReply);
     if (rc == EXIT_SUCCESS) {
       ACA_LOG_INFO("Control Fast Path streaming - Successfully updated host with latest goal state %d.\n",

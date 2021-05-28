@@ -165,11 +165,15 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
           /* Critical section ends */
           std::chrono::_V2::steady_clock::time_point end =
                   std::chrono::steady_clock::now();
-
+          auto end_high_rest = std::chrono::high_resolution_clock::now();
           auto cleanup_time = cast_to_microseconds(end - start).count();
-
+          auto process_successful_host_operation_reply_time =
+                  cast_to_microseconds(end_high_rest - received_ncm_reply_time).count();
           ACA_LOG_DEBUG("Erasing one entry into request_uuid_on_demand_payload_map took [%ld]us, which is [%ld]ms\n",
                         cleanup_time, us_to_ms(cleanup_time));
+          ACA_LOG_INFO("For UUID: [%s], processing a successful host operation reply took %ld milliseconds\n",
+                       request_id.c_str(),
+                       us_to_ms(process_successful_host_operation_reply_time));
         }
       }
       delete call;
