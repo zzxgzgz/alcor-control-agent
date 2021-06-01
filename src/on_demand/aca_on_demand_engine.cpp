@@ -134,7 +134,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
       if (call->status.ok()) {
         ACA_LOG_DEBUG("%s\n", "Got an GRPC reply that is OK, need to process it.");
         for (int i = 0; i < call->reply.operation_statuses_size(); i++) {
-          // hostOperationStatus = call->reply.operation_statuses(i);
+          hostOperationStatus = call->reply.operation_statuses(i);
           // replyStatus = hostOperationStatus.operation_status();
           request_id = hostOperationStatus.request_id();
           // found_data = request_uuid_on_demand_payload_map.find(request_id);
