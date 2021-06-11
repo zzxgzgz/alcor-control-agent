@@ -147,6 +147,8 @@ void GoalStateProvisionerImpl::ConnectToNCM()
   // If the channel does receive the keep alive ping result in 20 seconds, it closes the connection
   args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20000);
 
+  args.SetInt(GRPC_ARG_MAX_CONCURRENT_STREAMS, 200);
+
   // Allow keep alive ping even if there are no calls in flight
   args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
 
@@ -165,7 +167,11 @@ void GoalStateProvisionerImpl::RunServer()
   builder.SetMaxMessageSize(INT_MAX);
   builder.SetMaxReceiveMessageSize(INT_MAX);
   string GRPC_SERVER_ADDRESS = "0.0.0.0:" + g_grpc_server_port;
+  grpc::ResourceQuota rq;
+  rq.SetMaxThreads(16);
+  builder.SetResourceQuota(rq);
   builder.AddListeningPort(GRPC_SERVER_ADDRESS, grpc::InsecureServerCredentials());
+  builder.AddChannelArgument(GRPC_ARG_MAX_CONCURRENT_STREAMS, 200);
   builder.RegisterService(this);
   server = builder.BuildAndStart();
   ACA_LOG_INFO("Streaming capable GRPC server listening on %s\n",
