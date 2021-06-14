@@ -190,10 +190,10 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
   // string request_id;
   // on_demand_payload *request_payload;
   ACA_LOG_DEBUG("%s\n", "Beginning of process_async_grpc_replies");
-
+  auto future_pointer = std::make_shared<std::future<void> >();
   while (_cq.Next(&got_tag, &ok)) {
-    std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
-               this, std::ref(got_tag), std::ref(ok));
+    *future_pointer = std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
+                                 this, std::ref(got_tag), std::ref(ok));
     // std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
     //         std::chrono::high_resolution_clock::now();
 
