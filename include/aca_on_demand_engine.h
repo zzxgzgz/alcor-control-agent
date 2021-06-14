@@ -95,8 +95,8 @@ class ACA_On_Demand_Engine {
   void unknown_recv(uint16_t vlan_id, string ip_src, string ip_dest, int port_src,
                     int port_dest, Protocol protocol, char *uuid_str);
   void process_async_grpc_replies();
-  void process_async_replies_asyncly(grpc::Status status,
-                                     alcor::schema::HostRequestReply reply);
+  void process_async_replies_asyncly(string request_id, OperationStatus replyStatus,
+                                     on_demand_payload *request_payload);
 /* ethernet headers are always exactly 14 bytes [1] */
 #define SIZE_ETHERNET 14
 

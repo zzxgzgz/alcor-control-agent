@@ -110,17 +110,18 @@ void ACA_On_Demand_Engine::clean_remaining_payload()
   }
 }
 
-void ACA_On_Demand_Engine::process_async_replies_asyncly(grpc::Status status,
-                                                         alcor::schema::HostRequestReply reply)
+void ACA_On_Demand_Engine::process_async_replies_asyncly(string request_id,
+                                                         OperationStatus replyStatus,
+                                                         on_demand_payload *request_payload)
 {
   ACA_LOG_INFO("%s\n", "Trying to process this hostOperationReply in another thread");
   std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
           std::chrono::high_resolution_clock::now();
-  HostRequestReply_HostRequestOperationStatus hostOperationStatus;
-  OperationStatus replyStatus;
-  std::unordered_map<std::__cxx11::string, on_demand_payload *, std::hash<std::__cxx11::string> >::iterator found_data;
-  string request_id;
-  on_demand_payload *request_payload;
+  // HostRequestReply_HostRequestOperationStatus hostOperationStatus;
+  // OperationStatus replyStatus;
+  // std::unordered_map<std::__cxx11::string, on_demand_payload *, std::hash<std::__cxx11::string> >::iterator found_data;
+  // string request_id;
+  // on_demand_payload *request_payload;
   // if (ok) {
   //   ACA_LOG_DEBUG("%s\n", "_cq->Next is good, ready to static cast the Async Client Call");
 
@@ -128,53 +129,46 @@ void ACA_On_Demand_Engine::process_async_replies_asyncly(grpc::Status status,
 
   //   ACA_LOG_DEBUG("%s\n", "Async Client Call casted successfully.");
 
-  if (status.ok()) {
-    ACA_LOG_DEBUG("%s\n", "Got an GRPC reply that is OK, need to process it.");
-    for (int i = 0; i < reply.operation_statuses_size(); i++) {
-      hostOperationStatus = reply.operation_statuses(i);
-      replyStatus = hostOperationStatus.operation_status();
-      request_id = hostOperationStatus.request_id();
-      found_data = request_uuid_on_demand_payload_map.find(request_id);
-    }
-    ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
-                  request_id.c_str(),
-                  chrono::duration_cast<chrono::milliseconds>(
-                          received_ncm_reply_time.time_since_epoch())
-                          .count());
-    ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n", to_string(replyStatus).c_str());
-    if (found_data != request_uuid_on_demand_payload_map.end()) {
-      request_payload = found_data->second;
-      ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
-                    request_id.c_str(), request_payload->in_port,
-                    request_payload->protocol);
+  // if (status.ok()) {
+  ACA_LOG_DEBUG("%s\n", "Got an GRPC reply that is OK, need to process it.");
+  // for (int i = 0; i < reply.operation_statuses_size(); i++) {
+  //   hostOperationStatus = reply.operation_statuses(i);
+  //   replyStatus = hostOperationStatus.operation_status();
+  //   request_id = hostOperationStatus.request_id();
+  //   found_data = request_uuid_on_demand_payload_map.find(request_id);
+  // }
+  ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
+                request_id.c_str(),
+                chrono::duration_cast<chrono::milliseconds>(
+                        received_ncm_reply_time.time_since_epoch())
+                        .count());
+  ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n", to_string(replyStatus).c_str());
+  // if (found_data != request_uuid_on_demand_payload_map.end()) {
+  // request_payload = found_data->second;
+  ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
+                request_id.c_str(), request_payload->in_port, request_payload->protocol);
 
-      ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
+  ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
 
-      on_demand(request_id, replyStatus, request_payload->in_port,
-                request_payload->packet, request_payload->packet_size,
-                request_payload->protocol, request_payload->insert_time);
-      std::chrono::_V2::steady_clock::time_point start =
-              std::chrono::steady_clock::now();
-      /* Critical section begins */
-      _payload_map_mutex.lock();
-      request_uuid_on_demand_payload_map.erase(request_id);
-      _payload_map_mutex.unlock();
-      /* Critical section ends */
-      std::chrono::_V2::steady_clock::time_point end = std::chrono::steady_clock::now();
-      auto end_high_rest = std::chrono::high_resolution_clock::now();
-      auto cleanup_time = cast_to_microseconds(end - start).count();
-      auto process_successful_host_operation_reply_time =
-              cast_to_microseconds(end_high_rest - received_ncm_reply_time).count();
-      ACA_LOG_DEBUG("Erasing one entry into request_uuid_on_demand_payload_map took [%ld]us, which is [%ld]ms\n",
-                    cleanup_time, us_to_ms(cleanup_time));
-      ACA_LOG_INFO("For UUID: [%s], processing a successful host operation reply took %ld milliseconds\n",
-                   request_id.c_str(),
-                   us_to_ms(process_successful_host_operation_reply_time));
-    }
-  }
-  // delete call;
-  // } else {
-  //   ACA_LOG_INFO("%s\n", "Got an GRPC reply that is NOT OK, don't need to process the data");
+  on_demand(request_id, replyStatus, request_payload->in_port,
+            request_payload->packet, request_payload->packet_size,
+            request_payload->protocol, request_payload->insert_time);
+  std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
+  /* Critical section begins */
+  _payload_map_mutex.lock();
+  request_uuid_on_demand_payload_map.erase(request_id);
+  _payload_map_mutex.unlock();
+  /* Critical section ends */
+  std::chrono::_V2::steady_clock::time_point end = std::chrono::steady_clock::now();
+  auto end_high_rest = std::chrono::high_resolution_clock::now();
+  auto cleanup_time = cast_to_microseconds(end - start).count();
+  auto process_successful_host_operation_reply_time =
+          cast_to_microseconds(end_high_rest - received_ncm_reply_time).count();
+  ACA_LOG_DEBUG("Erasing one entry into request_uuid_on_demand_payload_map took [%ld]us, which is [%ld]ms\n",
+                cleanup_time, us_to_ms(cleanup_time));
+  ACA_LOG_INFO("For UUID: [%s], processing a successful host operation reply took %ld milliseconds\n",
+               request_id.c_str(), us_to_ms(process_successful_host_operation_reply_time));
+  // }
   // }
 }
 
@@ -182,17 +176,17 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
 {
   void *got_tag;
   bool ok = false;
-  // HostRequestReply_HostRequestOperationStatus hostOperationStatus;
-  // OperationStatus replyStatus;
-  // // bool found_data;
-  // std::unordered_map<std::__cxx11::string, on_demand_payload *, std::hash<std::__cxx11::string> >::iterator found_data;
-  // string request_id;
-  // on_demand_payload *request_payload;
+  HostRequestReply_HostRequestOperationStatus hostOperationStatus;
+  OperationStatus replyStatus;
+  // bool found_data;
+  std::unordered_map<std::__cxx11::string, on_demand_payload *, std::hash<std::__cxx11::string> >::iterator found_data;
+  string request_id;
+  on_demand_payload *request_payload;
   ACA_LOG_DEBUG("%s\n", "Beginning of process_async_grpc_replies");
   auto future_pointer = std::make_shared<std::future<void> >();
   while (_cq.Next(&got_tag, &ok)) {
-    // std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
-    //         std::chrono::high_resolution_clock::now();
+    std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
+            std::chrono::high_resolution_clock::now();
 
     if (ok) {
       ACA_LOG_DEBUG("%s\n", "_cq->Next is good, ready to static cast the Async Client Call");
@@ -201,55 +195,55 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
       auto call_status_copy = call->status;
       auto call_reply_copy = call->reply;
       ACA_LOG_DEBUG("%s\n", "Async Client Call casted successfully.");
-      *future_pointer = std::async(
-              std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
-              this, std::ref(call_status_copy), std::ref(call_reply_copy));
-      //   if (call->status.ok()) {
-      //     ACA_LOG_DEBUG("%s\n", "Got an GRPC reply that is OK, need to process it.");
-      //     for (int i = 0; i < call->reply.operation_statuses_size(); i++) {
-      //       hostOperationStatus = call->reply.operation_statuses(i);
-      //       replyStatus = hostOperationStatus.operation_status();
-      //       request_id = hostOperationStatus.request_id();
-      //       found_data = request_uuid_on_demand_payload_map.find(request_id);
-      //     }
-      //     ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
-      //                   request_id.c_str(),
-      //                   chrono::duration_cast<chrono::milliseconds>(
-      //                           received_ncm_reply_time.time_since_epoch())
-      //                           .count());
-      //     ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n",
-      //                   to_string(replyStatus).c_str());
-      //     if (found_data != request_uuid_on_demand_payload_map.end()) {
-      //       request_payload = found_data->second;
-      //       ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
-      //                     request_id.c_str(), request_payload->in_port,
-      //                     request_payload->protocol);
 
-      //       ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
+      if (call->status.ok()) {
+        ACA_LOG_DEBUG("%s\n", "Got an GRPC reply that is OK, need to process it.");
+        for (int i = 0; i < call->reply.operation_statuses_size(); i++) {
+          hostOperationStatus = call->reply.operation_statuses(i);
+          replyStatus = hostOperationStatus.operation_status();
+          request_id = hostOperationStatus.request_id();
+          found_data = request_uuid_on_demand_payload_map.find(request_id);
+        }
+        ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
+                      request_id.c_str(),
+                      chrono::duration_cast<chrono::milliseconds>(
+                              received_ncm_reply_time.time_since_epoch())
+                              .count());
+        ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n",
+                      to_string(replyStatus).c_str());
+        if (found_data != request_uuid_on_demand_payload_map.end()) {
+          request_payload = found_data->second;
+          ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
+                        request_id.c_str(), request_payload->in_port,
+                        request_payload->protocol);
 
-      //       on_demand(request_id, replyStatus, request_payload->in_port,
-      //                 request_payload->packet, request_payload->packet_size,
-      //                 request_payload->protocol, request_payload->insert_time);
-      //       std::chrono::_V2::steady_clock::time_point start =
-      //               std::chrono::steady_clock::now();
-      //       /* Critical section begins */
-      //       _payload_map_mutex.lock();
-      //       request_uuid_on_demand_payload_map.erase(request_id);
-      //       _payload_map_mutex.unlock();
-      //       /* Critical section ends */
-      //       std::chrono::_V2::steady_clock::time_point end =
-      //               std::chrono::steady_clock::now();
-      //       auto end_high_rest = std::chrono::high_resolution_clock::now();
-      //       auto cleanup_time = cast_to_microseconds(end - start).count();
-      //       auto process_successful_host_operation_reply_time =
-      //               cast_to_microseconds(end_high_rest - received_ncm_reply_time).count();
-      //       ACA_LOG_DEBUG("Erasing one entry into request_uuid_on_demand_payload_map took [%ld]us, which is [%ld]ms\n",
-      //                     cleanup_time, us_to_ms(cleanup_time));
-      //       ACA_LOG_INFO("For UUID: [%s], processing a successful host operation reply took %ld milliseconds\n",
-      //                    request_id.c_str(),
-      //                    us_to_ms(process_successful_host_operation_reply_time));
-      //     }
-      //   }
+          ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
+          *future_pointer = std::async(
+                  std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
+                  this, request_id, replyStatus, request_payload);
+          // on_demand(request_id, replyStatus, request_payload->in_port,
+          //           request_payload->packet, request_payload->packet_size,
+          //           request_payload->protocol, request_payload->insert_time);
+          // std::chrono::_V2::steady_clock::time_point start =
+          //         std::chrono::steady_clock::now();
+          // /* Critical section begins */
+          // _payload_map_mutex.lock();
+          // request_uuid_on_demand_payload_map.erase(request_id);
+          // _payload_map_mutex.unlock();
+          // /* Critical section ends */
+          // std::chrono::_V2::steady_clock::time_point end =
+          //         std::chrono::steady_clock::now();
+          // auto end_high_rest = std::chrono::high_resolution_clock::now();
+          // auto cleanup_time = cast_to_microseconds(end - start).count();
+          // auto process_successful_host_operation_reply_time =
+          //         cast_to_microseconds(end_high_rest - received_ncm_reply_time).count();
+          // ACA_LOG_DEBUG("Erasing one entry into request_uuid_on_demand_payload_map took [%ld]us, which is [%ld]ms\n",
+          //               cleanup_time, us_to_ms(cleanup_time));
+          // ACA_LOG_INFO("For UUID: [%s], processing a successful host operation reply took %ld milliseconds\n",
+          //              request_id.c_str(),
+          //              us_to_ms(process_successful_host_operation_reply_time));
+        }
+      }
       delete call;
     } else {
       ACA_LOG_INFO("%s\n", "Got an GRPC reply that is NOT OK, don't need to process the data");
