@@ -118,7 +118,6 @@ void ACA_On_Demand_Engine::process_async_replies_asyncly(grpc::Status status,
           std::chrono::high_resolution_clock::now();
   HostRequestReply_HostRequestOperationStatus hostOperationStatus;
   OperationStatus replyStatus;
-  // bool found_data;
   std::unordered_map<std::__cxx11::string, on_demand_payload *, std::hash<std::__cxx11::string> >::iterator found_data;
   string request_id;
   on_demand_payload *request_payload;
@@ -251,7 +250,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
       //                    us_to_ms(process_successful_host_operation_reply_time));
       //     }
       //   }
-      //   delete call;
+      delete call;
     } else {
       ACA_LOG_INFO("%s\n", "Got an GRPC reply that is NOT OK, don't need to process the data");
     }
