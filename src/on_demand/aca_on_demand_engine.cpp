@@ -141,6 +141,7 @@ void ACA_On_Demand_Engine::process_async_replies_asyncly(string request_id, Oper
                         received_ncm_reply_time.time_since_epoch())
                         .count());
   ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n", to_string(replyStatus).c_str());
+  found_data = request_uuid_on_demand_payload_map.find(request_id);
   if (found_data != request_uuid_on_demand_payload_map.end()) {
     request_payload = found_data->second;
     ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
