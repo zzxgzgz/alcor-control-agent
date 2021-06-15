@@ -183,7 +183,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
   string request_id;
   // on_demand_payload *request_payload;
   ACA_LOG_DEBUG("%s\n", "Beginning of process_async_grpc_replies");
-  auto future_pointer = std::make_shared<std::future<void> >();
+  // auto future_pointer = std::make_shared<std::future<void> >();
   while (_cq.Next(&got_tag, &ok)) {
     std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
             std::chrono::high_resolution_clock::now();
@@ -211,8 +211,13 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
                               .count());
         ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n",
                       to_string(replyStatus).c_str());
-        *future_pointer = std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
-                                     this, request_id, replyStatus);
+        // using a new thread to process it.
+        std::thread(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly,
+                              this, request_id, replyStatus))
+                .detach();
+
+        // *future_pointer = std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
+        //                              this, request_id, replyStatus);
         // if (found_data != request_uuid_on_demand_payload_map.end()) {
         //   request_payload = found_data->second;
         //   ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
