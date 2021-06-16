@@ -17,6 +17,7 @@
 #include "aca_util.h"
 #include "aca_comm_mgr.h"
 #include "aca_grpc.h"
+#include "aca_grpc_client.h"
 #include "goalstateprovisioner.grpc.pb.h"
 #include "goalstate.pb.h"
 #include "cppkafka/buffer.h"
@@ -138,25 +139,25 @@ void print_goalstateReply(GoalStateOperationReply gsOperationReply)
 }
 
 // Synchronous server implementation to test the grpc client's connectivity.
-class GoalStateProvisionerServer final : public GoalStateProvisioner::Service {
-  grpc::Status RequestGoalStates(ServerContext *ctx, const HostRequest *request,
-                                 HostRequestReply *response) override
-  {
-    string expected_request_id = "12345";
-    ctx->client_metadata();
-    request->CheckInitialized();
-    ACA_LOG_INFO("%s", "Test Server code called!");
-    response->mutable_operation_statuses()->Add();
-    response->mutable_operation_statuses(0)->set_request_id(
-            request->state_requests(0).request_id());
-    if (request->state_requests(0).request_id() == expected_request_id) {
-      response->mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::SUCCESS);
-    } else {
-      response->mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::FAILURE);
-    }
-    return grpc::Status::OK;
-  }
-};
+// class GoalStateProvisionerServer final : public GoalStateProvisioner::Service {
+//   grpc::Status RequestGoalStates(ServerContext *ctx, const HostRequest *request,
+//                                  HostRequestReply *response) override
+//   {
+//     string expected_request_id = "12345";
+//     ctx->client_metadata();
+//     request->CheckInitialized();
+//     ACA_LOG_INFO("%s", "Test Server code called!");
+//     response->mutable_operation_statuses()->Add();
+//     response->mutable_operation_statuses(0)->set_request_id(
+//             request->state_requests(0).request_id());
+//     if (request->state_requests(0).request_id() == expected_request_id) {
+//       response->mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::SUCCESS);
+//     } else {
+//       response->mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::FAILURE);
+//     }
+//     return grpc::Status::OK;
+//   }
+// };
 
 int RunServer()
 {
@@ -164,7 +165,7 @@ int RunServer()
 
   std::string server_address("0.0.0.0:54321");
 
-  GoalStateProvisionerServer service;
+  GoalStateProvisionerImpl service;
 
   ServerBuilder builder;
   // Listen on the given address without any authentication mechanism.
