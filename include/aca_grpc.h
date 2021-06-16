@@ -34,6 +34,7 @@ class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
 
   void RequestGoalStates(HostRequest *request, grpc::CompletionQueue *cq);
 
+  void RequestGoalStatesInNewThread(HostRequest *request, grpc::CompletionQueue *cq);
   // ~GoalStateProvisionerImpl();
   explicit GoalStateProvisionerImpl(){};
   Status PushNetworkResourceStates(ServerContext *context, const GoalState *goalState,

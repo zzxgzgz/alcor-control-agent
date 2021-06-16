@@ -41,6 +41,34 @@ using aca_comm_manager::Aca_Comm_Manager;
 void GoalStateProvisionerImpl::RequestGoalStates(HostRequest *request,
                                                  grpc::CompletionQueue *cq)
 {
+  std::thread(std::bind(&GoalStateProvisionerImpl::RequestGoalStatesInNewThread,
+                        this, request, cq))
+          .detach();
+  // grpc::ClientContext ctx;
+  // alcor::schema::HostRequestReply reply;
+
+  // // check current grpc channel state, try to connect if needed
+  // grpc_connectivity_state current_state = chan_->GetState(true);
+  // if (current_state == grpc_connectivity_state::GRPC_CHANNEL_SHUTDOWN ||
+  //     current_state == grpc_connectivity_state::GRPC_CHANNEL_TRANSIENT_FAILURE) {
+  //   ACA_LOG_INFO("%s, it is: [%d]\n",
+  //                "Channel state is not READY/CONNECTING/IDLE. Try to reconnnect.",
+  //                current_state);
+  //   this->ConnectToNCM();
+  //   reply.mutable_operation_statuses()->Add();
+  //   reply.mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::FAILURE);
+  //   return;
+  // }
+  // AsyncClientCall *call = new AsyncClientCall;
+  // call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
+  // call->response_reader->Finish(&call->reply, &call->status, (void *)call);
+  return;
+}
+
+void GoalStateProvisionerImpl::RequestGoalStatesInNewThread(HostRequest *request,
+                                                            grpc::CompletionQueue *cq)
+{
+  ACA_LOG_INFO("%s\n", "Try to send on-demand request using a new thread");
   grpc::ClientContext ctx;
   alcor::schema::HostRequestReply reply;
 
@@ -59,7 +87,6 @@ void GoalStateProvisionerImpl::RequestGoalStates(HostRequest *request,
   AsyncClientCall *call = new AsyncClientCall;
   call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
   call->response_reader->Finish(&call->reply, &call->status, (void *)call);
-  return;
 }
 
 Status
