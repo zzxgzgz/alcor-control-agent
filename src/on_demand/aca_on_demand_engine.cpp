@@ -110,11 +110,13 @@ void ACA_On_Demand_Engine::clean_remaining_payload()
   }
 }
 
-void ACA_On_Demand_Engine::process_async_replies_asyncly(string request_id, OperationStatus replyStatus)
+void ACA_On_Demand_Engine::process_async_replies_asyncly(
+        string request_id, OperationStatus replyStatus,
+        std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time)
 {
   ACA_LOG_INFO("%s\n", "Trying to process this hostOperationReply in another thread");
-  std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
-          std::chrono::high_resolution_clock::now();
+  // std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
+  //         std::chrono::high_resolution_clock::now();
   // HostRequestReply_HostRequestOperationStatus hostOperationStatus;
   // OperationStatus replyStatus;
   std::unordered_map<std::__cxx11::string, on_demand_payload *, std::hash<std::__cxx11::string> >::iterator found_data;
@@ -135,11 +137,11 @@ void ACA_On_Demand_Engine::process_async_replies_asyncly(string request_id, Oper
   //   request_id = hostOperationStatus.request_id();
   //   found_data = request_uuid_on_demand_payload_map.find(request_id);
   // }
-  ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
-                request_id.c_str(),
-                chrono::duration_cast<chrono::milliseconds>(
-                        received_ncm_reply_time.time_since_epoch())
-                        .count());
+  // ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
+  //               request_id.c_str(),
+  //               chrono::duration_cast<chrono::milliseconds>(
+  //                       received_ncm_reply_time.time_since_epoch())
+  //                       .count());
   ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n", to_string(replyStatus).c_str());
   found_data = request_uuid_on_demand_payload_map.find(request_id);
   if (found_data != request_uuid_on_demand_payload_map.end()) {
@@ -213,7 +215,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
                       to_string(replyStatus).c_str());
         // using a new thread to process it.
         std::thread(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly,
-                              this, request_id, replyStatus))
+                              this, request_id, replyStatus, received_ncm_reply_time))
                 .detach();
 
         // *future_pointer = std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
