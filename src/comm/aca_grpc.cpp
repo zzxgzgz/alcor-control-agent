@@ -42,7 +42,7 @@ void GoalStateProvisionerImpl::RequestGoalStates(HostRequest *request,
                                                  grpc::CompletionQueue *cq)
 {
   std::thread(std::bind(&GoalStateProvisionerImpl::RequestGoalStatesInNewThread,
-                        this, request, cq))
+                        this, std::ref(request), std::ref(cq)))
           .detach();
   // grpc::ClientContext ctx;
   // alcor::schema::HostRequestReply reply;
