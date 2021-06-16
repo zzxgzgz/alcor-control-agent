@@ -18,6 +18,7 @@
 #include "aca_vlan_manager.h"
 #include "aca_ovs_control.h"
 #include "aca_grpc.h"
+#include "aca_grpc_client.h"
 #include "aca_log.h"
 #include "aca_util.h"
 #include "aca_config.h"
@@ -52,7 +53,8 @@ using namespace alcor::schema;
 extern std::atomic_ulong g_total_execute_system_time;
 extern bool g_demo_mode;
 extern string g_ncm_address, g_ncm_port;
-extern GoalStateProvisionerImpl *g_grpc_server;
+// extern GoalStateProvisionerImpl *g_grpc_server;
+extern GoalStateProvisionerClientImpl *g_grpc_client;
 
 namespace aca_on_demand_engine
 {
@@ -286,7 +288,7 @@ void ACA_On_Demand_Engine::unknown_recv(uint16_t vlan_id, string ip_src,
   ACA_LOG_DEBUG(
           "For UUID: [%s], on-demand sent on %ld milliseconds\n", uuid_str,
           chrono::duration_cast<chrono::milliseconds>(start.time_since_epoch()).count());
-  g_grpc_server->RequestGoalStates(&HostRequest_builder, &_cq);
+  g_grpc_client->RequestGoalStates(&HostRequest_builder, &_cq);
 }
 
 void ACA_On_Demand_Engine::on_demand(string uuid_for_call, OperationStatus status,

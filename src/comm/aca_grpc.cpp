@@ -32,62 +32,35 @@
 #include "aca_grpc.h"
 
 extern string g_grpc_server_port;
-extern string g_ncm_address;
-extern string g_ncm_port;
+// extern string g_ncm_address;
+// extern string g_ncm_port;
 
 using namespace alcor::schema;
 using aca_comm_manager::Aca_Comm_Manager;
 
-void GoalStateProvisionerImpl::RequestGoalStates(HostRequest *request,
-                                                 grpc::CompletionQueue *cq)
-{
-  std::thread(std::bind(&GoalStateProvisionerImpl::RequestGoalStatesInNewThread,
-                        this, std::ref(request), std::ref(cq)))
-          .detach();
-  // grpc::ClientContext ctx;
-  // alcor::schema::HostRequestReply reply;
+// void GoalStateProvisionerImpl::RequestGoalStates(HostRequest *request,
+//                                                  grpc::CompletionQueue *cq)
+// {
+//   grpc::ClientContext ctx;
+//   alcor::schema::HostRequestReply reply;
 
-  // // check current grpc channel state, try to connect if needed
-  // grpc_connectivity_state current_state = chan_->GetState(true);
-  // if (current_state == grpc_connectivity_state::GRPC_CHANNEL_SHUTDOWN ||
-  //     current_state == grpc_connectivity_state::GRPC_CHANNEL_TRANSIENT_FAILURE) {
-  //   ACA_LOG_INFO("%s, it is: [%d]\n",
-  //                "Channel state is not READY/CONNECTING/IDLE. Try to reconnnect.",
-  //                current_state);
-  //   this->ConnectToNCM();
-  //   reply.mutable_operation_statuses()->Add();
-  //   reply.mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::FAILURE);
-  //   return;
-  // }
-  // AsyncClientCall *call = new AsyncClientCall;
-  // call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
-  // call->response_reader->Finish(&call->reply, &call->status, (void *)call);
-  return;
-}
-
-void GoalStateProvisionerImpl::RequestGoalStatesInNewThread(HostRequest *request,
-                                                            grpc::CompletionQueue *cq)
-{
-  ACA_LOG_INFO("%s\n", "Try to send on-demand request using a new thread");
-  grpc::ClientContext ctx;
-  alcor::schema::HostRequestReply reply;
-
-  // check current grpc channel state, try to connect if needed
-  grpc_connectivity_state current_state = chan_->GetState(true);
-  if (current_state == grpc_connectivity_state::GRPC_CHANNEL_SHUTDOWN ||
-      current_state == grpc_connectivity_state::GRPC_CHANNEL_TRANSIENT_FAILURE) {
-    ACA_LOG_INFO("%s, it is: [%d]\n",
-                 "Channel state is not READY/CONNECTING/IDLE. Try to reconnnect.",
-                 current_state);
-    this->ConnectToNCM();
-    reply.mutable_operation_statuses()->Add();
-    reply.mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::FAILURE);
-    return;
-  }
-  AsyncClientCall *call = new AsyncClientCall;
-  call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
-  call->response_reader->Finish(&call->reply, &call->status, (void *)call);
-}
+//   // check current grpc channel state, try to connect if needed
+//   grpc_connectivity_state current_state = chan_->GetState(true);
+//   if (current_state == grpc_connectivity_state::GRPC_CHANNEL_SHUTDOWN ||
+//       current_state == grpc_connectivity_state::GRPC_CHANNEL_TRANSIENT_FAILURE) {
+//     ACA_LOG_INFO("%s, it is: [%d]\n",
+//                  "Channel state is not READY/CONNECTING/IDLE. Try to reconnnect.",
+//                  current_state);
+//     this->ConnectToNCM();
+//     reply.mutable_operation_statuses()->Add();
+//     reply.mutable_operation_statuses()->at(0).set_operation_status(OperationStatus::FAILURE);
+//     return;
+//   }
+//   AsyncClientCall *call = new AsyncClientCall;
+//   call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
+//   call->response_reader->Finish(&call->reply, &call->status, (void *)call);
+//   return;
+// }
 
 Status
 GoalStateProvisionerImpl::PushNetworkResourceStates(ServerContext * /* context */,
@@ -165,30 +138,30 @@ Status GoalStateProvisionerImpl::ShutDownServer()
   return Status::OK;
 }
 
-void GoalStateProvisionerImpl::ConnectToNCM()
-{
-  ACA_LOG_INFO("%s\n", "Trying to init a new sub to connect to the NCM");
-  grpc::ChannelArguments args;
-  // Channel does a keep alive ping every 10 seconds;
-  args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10000);
-  // If the channel does receive the keep alive ping result in 20 seconds, it closes the connection
-  args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20000);
+// void GoalStateProvisionerImpl::ConnectToNCM()
+// {
+//   ACA_LOG_INFO("%s\n", "Trying to init a new sub to connect to the NCM");
+//   grpc::ChannelArguments args;
+//   // Channel does a keep alive ping every 10 seconds;
+//   args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 10000);
+//   // If the channel does receive the keep alive ping result in 20 seconds, it closes the connection
+//   args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 20000);
 
-  // args.SetInt(GRPC_ARG_MAX_CONCURRENT_STREAMS, 500);
+//   // args.SetInt(GRPC_ARG_MAX_CONCURRENT_STREAMS, 500);
 
-  // Allow keep alive ping even if there are no calls in flight
-  args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
+//   // Allow keep alive ping even if there are no calls in flight
+//   args.SetInt(GRPC_ARG_KEEPALIVE_PERMIT_WITHOUT_CALLS, 1);
 
-  chan_ = grpc::CreateCustomChannel(g_ncm_address + ":" + g_ncm_port,
-                                    grpc::InsecureChannelCredentials(), args);
-  stub_ = GoalStateProvisioner::NewStub(chan_);
+//   chan_ = grpc::CreateCustomChannel(g_ncm_address + ":" + g_ncm_port,
+//                                     grpc::InsecureChannelCredentials(), args);
+//   stub_ = GoalStateProvisioner::NewStub(chan_);
 
-  ACA_LOG_INFO("%s\n", "After initing a new sub to connect to the NCM");
-}
+//   ACA_LOG_INFO("%s\n", "After initing a new sub to connect to the NCM");
+// }
 
 void GoalStateProvisionerImpl::RunServer()
 {
-  this->ConnectToNCM();
+  // this->ConnectToNCM();
   ServerBuilder builder;
   // Try to unlimit the size of goalstate received.
   builder.SetMaxMessageSize(INT_MAX);

@@ -29,12 +29,12 @@ using grpc::Status;
 
 class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
   public:
-  std::unique_ptr<GoalStateProvisioner::Stub> stub_;
-  std::shared_ptr<grpc_impl::Channel> chan_;
+  // std::unique_ptr<GoalStateProvisioner::Stub> stub_;
+  // std::shared_ptr<grpc_impl::Channel> chan_;
 
-  void RequestGoalStates(HostRequest *request, grpc::CompletionQueue *cq);
+  // void RequestGoalStates(HostRequest *request, grpc::CompletionQueue *cq);
 
-  void RequestGoalStatesInNewThread(HostRequest *request, grpc::CompletionQueue *cq);
+  // void RequestGoalStatesInNewThread(HostRequest *request, grpc::CompletionQueue *cq);
   // ~GoalStateProvisionerImpl();
   explicit GoalStateProvisionerImpl(){};
   Status PushNetworkResourceStates(ServerContext *context, const GoalState *goalState,
@@ -48,15 +48,15 @@ class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
 
   void RunServer();
 
-  void ConnectToNCM();
+  // void ConnectToNCM();
 
   private:
   std::unique_ptr<Server> server;
 };
 
-struct AsyncClientCall {
-  alcor::schema::HostRequestReply reply;
-  grpc::ClientContext context;
-  grpc::Status status;
-  std::unique_ptr<grpc::ClientAsyncResponseReader<alcor::schema::HostRequestReply> > response_reader;
-};
+// struct AsyncClientCall {
+//   alcor::schema::HostRequestReply reply;
+//   grpc::ClientContext context;
+//   grpc::Status status;
+//   std::unique_ptr<grpc::ClientAsyncResponseReader<alcor::schema::HostRequestReply> > response_reader;
+// };

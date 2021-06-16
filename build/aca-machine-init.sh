@@ -140,4 +140,4 @@ fi
 
 echo "10--- running alcor-control-agent"
 # sends output to null device, but stderr to console 
-nohup $BUILD/bin/AlcorControlAgent -d > /dev/null 2>&1 &
+# nohup $BUILD/bin/AlcorControlAgent -d > /dev/null 2>&1 &
