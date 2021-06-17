@@ -288,10 +288,10 @@ void ACA_On_Demand_Engine::unknown_recv(uint16_t vlan_id, string ip_src,
   ACA_LOG_DEBUG(
           "For UUID: [%s], on-demand sent on %ld milliseconds\n", uuid_str,
           chrono::duration_cast<chrono::milliseconds>(start.time_since_epoch()).count());
-  std::thread(std::bind(&GoalStateProvisionerClientImpl::RequestGoalStates,
-                        g_grpc_client, &HostRequest_builder, &_cq))
-          .detach();
-  // g_grpc_client->RequestGoalStates(&HostRequest_builder, &_cq);
+  // std::thread(std::bind(&GoalStateProvisionerClientImpl::RequestGoalStates,
+  //                       g_grpc_client, &HostRequest_builder, &_cq))
+  //         .detach();
+  g_grpc_client->RequestGoalStates(&HostRequest_builder, &_cq);
 }
 
 void ACA_On_Demand_Engine::on_demand(string uuid_for_call, OperationStatus status,
