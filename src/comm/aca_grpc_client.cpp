@@ -22,7 +22,6 @@
 #include <string>
 #include <thread>
 #include <chrono>
-
 #include <grpcpp/server.h>
 #include <grpcpp/server_builder.h>
 #include <grpcpp/server_context.h>
@@ -30,6 +29,7 @@
 #include "aca_comm_mgr.h"
 #include "aca_log.h"
 #include "aca_grpc_client.h"
+#include "aca_util.h"
 
 // extern string g_grpc_server_port;
 extern string g_ncm_address;
@@ -59,6 +59,7 @@ void GoalStateProvisionerClientImpl::RequestGoalStates(HostRequest *request,
   AsyncClientCall *call = new AsyncClientCall;
   call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
   call->response_reader->Finish(&call->reply, &call->status, (void *)call);
+  ACA_LOG_INFO("Sent hostOperationRequest on thread: %ld\n", std::this_thread::get_id());
   return;
 }
 
@@ -161,7 +162,8 @@ void GoalStateProvisionerClientImpl::ConnectToNCM()
 
 void GoalStateProvisionerClientImpl::RunClient()
 {
-  ACA_LOG_INFO("%s\n", "Running a grpc client in a separate thread");
+  ACA_LOG_INFO("Running a grpc client in a separate thread id: %ld\n",
+               std::this_thread::get_id());
   this->ConnectToNCM();
 }
 
