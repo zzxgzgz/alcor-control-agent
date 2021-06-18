@@ -92,9 +92,11 @@ Status GoalStateProvisionerImpl::PushGoalStatesStream(
   GoalStateV2 goalStateV2;
   GoalStateOperationReply gsOperationReply;
   // int rc = EXIT_FAILURE;
-
+  ACA_LOG_INFO("%s\n", "[PushGoalStatesStream] Begins");
   while (stream->Read(&goalStateV2)) {
     // Use a separate thread to update the goalstateV2
+    ACA_LOG_INFO("%s\n", "[PushGoalStatesStream] Receives an GS, new a thread to process it");
+
     std::thread(std::bind(&GoalStateProvisionerImpl::UpdateGoalStateInNewThread,
                           this, stream, goalStateV2, gsOperationReply))
             .detach();
@@ -139,6 +141,8 @@ void GoalStateProvisionerImpl::UpdateGoalStateInNewThread(
         ServerReaderWriter<GoalStateOperationReply, GoalStateV2> *stream,
         GoalStateV2 goalStateV2, GoalStateOperationReply gsOperationReply)
 {
+  ACA_LOG_INFO("%s\n", "[UpdateGoalStateInNewThread] Begins to update goalstate");
+
   int rc = EXIT_FAILURE;
   std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
 
@@ -172,6 +176,8 @@ void GoalStateProvisionerImpl::UpdateGoalStateInNewThread(
                (message_total_operation_time / 1000));
   stream->Write(gsOperationReply);
   gsOperationReply.Clear();
+  ACA_LOG_INFO("%s\n", "[UpdateGoalStateInNewThread] Finished update goalstate");
+
   return;
 }
 
