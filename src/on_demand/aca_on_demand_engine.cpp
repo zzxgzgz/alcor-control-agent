@@ -116,7 +116,7 @@ void ACA_On_Demand_Engine::process_async_replies_asyncly(
         string request_id, OperationStatus replyStatus,
         std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time)
 {
-  ACA_LOG_INFO("%s\n", "Trying to process this hostOperationReply in another thread id: [%ld]",
+  ACA_LOG_INFO("Trying to process this hostOperationReply in another thread id: [%ld]",
                std::this_thread::get_id());
   // std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
   //         std::chrono::high_resolution_clock::now();
