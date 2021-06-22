@@ -189,12 +189,20 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
   // on_demand_payload *request_payload;
   ACA_LOG_DEBUG("%s\n", "Beginning of process_async_grpc_replies");
   // auto future_pointer = std::make_shared<std::future<void> >();
+  std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time_prev =
+          std::chrono::high_resolution_clock::now();
   while (_cq.Next(&got_tag, &ok)) {
     std::chrono::_V2::high_resolution_clock::time_point received_ncm_reply_time =
             std::chrono::high_resolution_clock::now();
 
     if (ok) {
       ACA_LOG_DEBUG("%s\n", "_cq->Next is good, ready to static cast the Async Client Call");
+      auto received_ncm_reply_interval =
+              cast_to_microseconds(received_ncm_reply_time - received_ncm_reply_time_prev)
+                      .count();
+      ACA_LOG_INFO("[METRICS] Elapsed time between receiving the last and current hostOperationReply took: %ld microseconds or %ld milliseconds\n",
+                   received_ncm_reply_interval, (received_ncm_reply_interval / 1000));
+      received_ncm_reply_time_prev = received_ncm_reply_time;
 
       AsyncClientCall *call = static_cast<AsyncClientCall *>(got_tag);
       auto call_status_copy = call->status;
@@ -216,7 +224,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
                               .count());
         ACA_LOG_DEBUG("Return from NCM - Reply Status: %s\n",
                       to_string(replyStatus).c_str());
-        ACA_LOG_INFO("%s\n", "Received hostOperationReply in thread id: [%ld]",
+        ACA_LOG_INFO("Received hostOperationReply in thread id: [%ld]\n",
                      std::this_thread::get_id());
         // using a new thread to process it.
         std::thread(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly,
