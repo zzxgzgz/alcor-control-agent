@@ -129,8 +129,6 @@ void ACA_On_Demand_Engine::process_async_replies_asyncly(
     ACA_LOG_DEBUG("Found data into the map, UUID: [%s], in_port: [%d], protocol: [%d]\n",
                   request_id.c_str(), request_payload->in_port, request_payload->protocol);
 
-    ACA_LOG_DEBUG("%s\n", "Printing out stuffs inside the unordered_map.");
-
     on_demand(request_id, replyStatus, request_payload->in_port,
               request_payload->packet, request_payload->packet_size,
               request_payload->protocol, request_payload->insert_time);
