@@ -18,8 +18,9 @@
 #include "aca_goal_state_handler.h"
 #include "aca_dhcp_state_handler.h"
 #include "goalstateprovisioner.grpc.pb.h"
+#include <thread>
 
-using namespace std;
+// using namespace std;
 using namespace alcor::schema;
 using namespace aca_goal_state_handler;
 using namespace aca_dhcp_state_handler;
@@ -167,7 +168,8 @@ int Aca_Comm_Manager::update_goal_state(GoalStateV2 &goal_state_message,
   auto t0 = std::chrono::high_resolution_clock::now();
   ACA_LOG_DEBUG("Starting to update goal state with format_version: %u\n",
                 goal_state_message.format_version());
-
+  ACA_LOG_DEBUG("[update_goal_state] Updating goalstate with thread id: [%ld]\n",
+                std::this_thread::get_id());
   ACA_LOG_INFO("[METRICS] Goal state message size is: %lu bytes, router_state_size: [%d]\n",
                goal_state_message.ByteSizeLong(),
                goal_state_message.router_states_size());
