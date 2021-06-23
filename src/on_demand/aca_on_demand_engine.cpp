@@ -215,7 +215,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
           hostOperationStatus = call->reply.operation_statuses(i);
           replyStatus = hostOperationStatus.operation_status();
           request_id = hostOperationStatus.request_id();
-          // found_data = request_uuid_on_demand_payload_map.find(request_id);
+          found_data = request_uuid_on_demand_payload_map.find(request_id);
         }
         ACA_LOG_DEBUG("For UUID: [%s], NCM called returned at: %ld milliseconds\n",
                       request_id.c_str(),
