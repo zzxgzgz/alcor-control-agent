@@ -29,9 +29,11 @@
 #include <unordered_map>
 #include "aca_log.h"
 #include "goalstateprovisioner.grpc.pb.h"
+#include "ctpl/ctpl_stl.h"
 
 using namespace alcor::schema;
 using namespace std;
+using namespace ctpl;
 // using namespace grpc;
 struct on_demand_payload {
   std::chrono::_V2::steady_clock::time_point insert_time;
@@ -66,6 +68,9 @@ class ACA_On_Demand_Engine {
   /* This records when clean_remaining_payload() ran last time, 
   its initial value should be the time  when clean_remaining_payload() was first called*/
   std::chrono::_V2::steady_clock::time_point last_time_cleaned_remaining_payload;
+
+  ctpl::thread_pool tPool;
+
   static ACA_On_Demand_Engine &get_instance();
 
   /*
@@ -169,6 +174,7 @@ class ACA_On_Demand_Engine {
     on_demand_payload_cleaning_thread = new std::thread(
             std::bind(&ACA_On_Demand_Engine::clean_remaining_payload, this));
     on_demand_payload_cleaning_thread->detach();
+    tPool.resize(32);
   };
   ~ACA_On_Demand_Engine()
   {

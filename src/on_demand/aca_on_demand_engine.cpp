@@ -227,10 +227,13 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
         ACA_LOG_INFO("Received hostOperationReply in thread id: [%ld]\n",
                      std::this_thread::get_id());
         // using a new thread to process it.
-        std::thread(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly,
-                              this, request_id, replyStatus, received_ncm_reply_time))
-                .detach();
+        // std::thread(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly,
+        //                       this, request_id, replyStatus, received_ncm_reply_time))
+        //         .detach();
 
+        // use the thread pool to process it.
+        tPool.push(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly, this,
+                             request_id, replyStatus, received_ncm_reply_time));
         // *future_pointer = std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
         //                              this, request_id, replyStatus);
         // if (found_data != request_uuid_on_demand_payload_map.end()) {
