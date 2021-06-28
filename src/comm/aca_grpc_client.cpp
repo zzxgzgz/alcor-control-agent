@@ -41,6 +41,7 @@ using aca_comm_manager::Aca_Comm_Manager;
 void GoalStateProvisionerClientImpl::RequestGoalStates(HostRequest *request,
                                                        grpc::CompletionQueue *cq)
 {
+  std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
   grpc::ClientContext ctx;
   alcor::schema::HostRequestReply reply;
 
@@ -60,6 +61,12 @@ void GoalStateProvisionerClientImpl::RequestGoalStates(HostRequest *request,
   call->response_reader = stub_->AsyncRequestGoalStates(&call->context, *request, cq);
   call->response_reader->Finish(&call->reply, &call->status, (void *)call);
   ACA_LOG_INFO("Sent hostOperationRequest on thread: %ld\n", std::this_thread::get_id());
+  std::chrono::_V2::steady_clock::time_point end = std::chrono::steady_clock::now();
+  auto send_host_operation_request_time =
+          std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  ACA_LOG_INFO("[METRICS] RequestGoalStates: [%ld], update finished at: [%ld]\nElapsed time for sending hostOperationRequest took: %ld microseconds or %ld milliseconds\n",
+               start, end, send_host_operation_request_time,
+               (send_host_operation_request_time / 1000));
   return;
 }
 

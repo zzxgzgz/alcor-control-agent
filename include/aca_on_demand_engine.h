@@ -174,7 +174,7 @@ class ACA_On_Demand_Engine {
     on_demand_payload_cleaning_thread = new std::thread(
             std::bind(&ACA_On_Demand_Engine::clean_remaining_payload, this));
     on_demand_payload_cleaning_thread->detach();
-    tPool.resize(64);
+    tPool.resize(32);
   };
   ~ACA_On_Demand_Engine()
   {
