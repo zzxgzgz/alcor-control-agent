@@ -167,6 +167,8 @@ class ACA_On_Demand_Engine {
   ACA_On_Demand_Engine()
   {
     ACA_LOG_DEBUG("%s\n", "Constructor of a new on demand engine, need to create a new thread to process the grpc replies");
+    int cores = std::thread::hardware_concurrency();
+    ACA_LOG_DEBUG("This host has %ld cores\n", cores);
     on_demand_reply_processing_thread = new std::thread(
             std::bind(&ACA_On_Demand_Engine::process_async_grpc_replies, this));
 
