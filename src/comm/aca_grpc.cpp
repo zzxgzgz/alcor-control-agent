@@ -230,7 +230,7 @@ void GoalStateProvisionerImpl::RunServer()
   builder.SetMaxMessageSize(INT_MAX);
   builder.SetMaxReceiveMessageSize(INT_MAX);
   string GRPC_SERVER_ADDRESS = "0.0.0.0:" + g_grpc_server_port;
-  builder.AddChannelArgument(GRPC_ARG_MAX_CONCURRENT_STREAMS, 32);
+  builder.AddChannelArgument(GRPC_ARG_MAX_CONCURRENT_STREAMS, 200);
   grpc::ResourceQuota rq;
   rq.SetMaxThreads(32);
   builder.SetResourceQuota(rq);
