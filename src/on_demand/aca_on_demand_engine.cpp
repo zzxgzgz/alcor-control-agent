@@ -234,7 +234,7 @@ void ACA_On_Demand_Engine::process_async_grpc_replies()
         // use the thread pool to process it.
         tPool.push(std::bind(&ACA_On_Demand_Engine::process_async_replies_asyncly, this,
                              request_id, replyStatus, received_ncm_reply_time));
-        ACA_LOG_DEBUG("After using the thread pool, we have %ls idle threads in the pool, thread pool size: %ld\n",
+        ACA_LOG_DEBUG("After using the thread pool, we have %ld idle threads in the pool, thread pool size: %ld\n",
                       tPool.n_idle(), tPool.size());
         // *future_pointer = std::async(std::launch::async, &ACA_On_Demand_Engine::process_async_replies_asyncly,
         //                              this, request_id, replyStatus);
