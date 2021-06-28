@@ -234,6 +234,7 @@ void GoalStateProvisionerImpl::RunServer()
   // grpc::ResourceQuota rq;
   // rq.SetMaxThreads(32);
   // builder.SetResourceQuota(rq);
+  builder.SetSyncServerOption(grpc_impl::ServerBuilder::SyncServerOption::NUM_CQS, 48);
   builder.SetSyncServerOption(grpc_impl::ServerBuilder::SyncServerOption::MAX_POLLERS, 48);
   builder.SetSyncServerOption(grpc_impl::ServerBuilder::SyncServerOption::MIN_POLLERS, 24);
   builder.AddListeningPort(GRPC_SERVER_ADDRESS, grpc::InsecureServerCredentials());
