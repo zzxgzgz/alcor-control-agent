@@ -182,6 +182,7 @@ class ACA_On_Demand_Engine {
     request_uuid_on_demand_payload_map.clear();
     delete on_demand_reply_processing_thread;
     delete on_demand_payload_cleaning_thread;
+    tPool.stop();
   };
 };
 } // namespace aca_on_demand_engine
