@@ -238,7 +238,6 @@ void GoalStateProvisionerImpl::RunServer()
   // builder.SetSyncServerOption(grpc_impl::ServerBuilder::SyncServerOption::MAX_POLLERS, 500);
   // builder.SetSyncServerOption(grpc_impl::ServerBuilder::SyncServerOption::MIN_POLLERS, 200);
   builder.AddListeningPort(GRPC_SERVER_ADDRESS, grpc::InsecureServerCredentials());
-  // builder.AddChannelArgument(GRPC_ARG_MAX_CONCURRENT_STREAMS, 500);
   builder.RegisterService(this);
   server = builder.BuildAndStart();
   ACA_LOG_INFO("Streaming capable GRPC server listening on %s\n",
