@@ -91,7 +91,7 @@ Status GoalStateProvisionerImpl::PushGoalStatesStream(
 {
   GoalStateV2 goalStateV2;
   GoalStateOperationReply gsOperationReply;
-  int rc = EXIT_FAILURE;
+  int rc = EXIT_SUCCESS; //EXIT_FAILURE;
   ACA_LOG_INFO("%s\n", "[PushGoalStatesStream] Begins");
   std::chrono::_V2::steady_clock::time_point receives_goalstate_time_previous =
           std::chrono::steady_clock::now();
@@ -124,7 +124,7 @@ Status GoalStateProvisionerImpl::PushGoalStatesStream(
                            received_gs_time_high_res.time_since_epoch())
                            .count());
     }
-    rc = Aca_Comm_Manager::get_instance().update_goal_state(goalStateV2, gsOperationReply);
+    // rc = Aca_Comm_Manager::get_instance().update_goal_state(goalStateV2, gsOperationReply);
     if (rc == EXIT_SUCCESS) {
       ACA_LOG_INFO("Control Fast Path streaming - Successfully updated host with latest goal state %d.\n",
                    rc);

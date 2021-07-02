@@ -35,6 +35,7 @@ class GoalStateProvisionerClientImpl final : public GoalStateProvisioner::Servic
   explicit GoalStateProvisionerClientImpl(){};
   void ConnectToNCM();
   void RunClient();
+  bool a = chan_ == nullptr;
 };
 
 // class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
