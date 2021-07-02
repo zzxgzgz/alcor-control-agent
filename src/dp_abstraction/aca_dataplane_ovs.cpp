@@ -773,6 +773,7 @@ int ACA_Dataplane_OVS::update_neighbor_state_workitem(NeighborState current_Neig
 
     for (int ip_index = 0;
          ip_index < current_NeighborConfiguration.fixed_ips_size(); ip_index++) {
+      ACA_LOG_DEBUG("In fixed ip loop, index: %ld\n", ip_index);
       fixed_ip_loop_start = chrono::steady_clock::now();
       auto current_fixed_ip = current_NeighborConfiguration.fixed_ips(ip_index);
 
@@ -890,8 +891,8 @@ int ACA_Dataplane_OVS::update_neighbor_state_workitem(NeighborState current_Neig
               }
             }
           }
-          update_neighbor_time = chrono::steady_clock::now();
         }
+        update_neighbor_time = chrono::steady_clock::now();
       } else {
         ACA_LOG_ERROR("Unknown neighbor_type: %d.\n",
                       current_NeighborState.operation_type());
