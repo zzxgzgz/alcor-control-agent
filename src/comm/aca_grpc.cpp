@@ -93,8 +93,8 @@ Status GoalStateProvisionerImpl::PushGoalStatesStream(
   GoalStateOperationReply gsOperationReply;
   // int rc = EXIT_FAILURE;
   ACA_LOG_INFO("%s\n", "[PushGoalStatesStream] Begins");
-  // std::chrono::_V2::steady_clock::time_point receives_goalstate_time_previous =
-  //         std::chrono::steady_clock::now();
+  std::chrono::_V2::steady_clock::time_point receives_goalstate_time_previous =
+          std::chrono::steady_clock::now();
   while (stream->Read(&goalStateV2)) {
     // Use a separate thread to update the goalstateV2
     // ACA_LOG_INFO("[PushGoalStatesStream] Receives an GS, new a thread to process it, thread id: [%ld]\n",
@@ -103,17 +103,17 @@ Status GoalStateProvisionerImpl::PushGoalStatesStream(
                          this, stream, goalStateV2, gsOperationReply));
     ACA_LOG_DEBUG("After using the thread pool, we have %ld idle threads in the pool, thread pool size: %ld\n",
                   tPool.n_idle(), tPool.size());
-    // std::chrono::_V2::steady_clock::time_point receives_goalstate_time_current =
-    //         std::chrono::steady_clock::now();
+    std::chrono::_V2::steady_clock::time_point receives_goalstate_time_current =
+            std::chrono::steady_clock::now();
 
-    // auto goalstate_receive_interval =
-    //         std::chrono::duration_cast<std::chrono::microseconds>(
-    //                 receives_goalstate_time_current - receives_goalstate_time_previous)
-    //                 .count();
+    auto goalstate_receive_interval =
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                    receives_goalstate_time_current - receives_goalstate_time_previous)
+                    .count();
 
-    // ACA_LOG_INFO("[METRICS] Elapsed time between receiving the last and current goalstate took: %ld microseconds or %ld milliseconds\n",
-    //              goalstate_receive_interval, (goalstate_receive_interval / 1000));
-    // receives_goalstate_time_previous = receives_goalstate_time_current;
+    ACA_LOG_INFO("[METRICS] Elapsed time between receiving the last and current goalstate took: %ld microseconds or %ld milliseconds\n",
+                 goalstate_receive_interval, (goalstate_receive_interval / 1000));
+    receives_goalstate_time_previous = receives_goalstate_time_current;
     // std::chrono::_V2::steady_clock::time_point start = std::chrono::steady_clock::now();
 
     // if (goalStateV2.neighbor_states_size() == 1) {
