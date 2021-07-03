@@ -228,7 +228,7 @@ Status GoalStateProvisionerImpl::ShutDownServer()
 
 void GoalStateProvisionerImpl::RunServer()
 {
-  tPool.resize(32);
+  tPool.resize(16);
 
   // this->ConnectToNCM();
   ServerBuilder builder;

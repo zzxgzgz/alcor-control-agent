@@ -59,6 +59,7 @@ class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
   private:
   std::unique_ptr<Server> server;
   ctpl::thread_pool tPool;
+  std::mutex gRPC_stream_mutex;
 };
 
 // struct AsyncClientCall {
