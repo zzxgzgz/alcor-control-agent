@@ -17,6 +17,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpc/support/log.h>
 #include "goalstateprovisioner.grpc.pb.h"
+#include "ctpl/ctpl_stl.h"
 
 using namespace alcor::schema;
 using grpc::Server;
@@ -49,14 +50,15 @@ class GoalStateProvisionerImpl final : public GoalStateProvisioner::Service {
   void RunServer();
 
   // Update this goalstate in a separate thread, so that PushGoalStatesStream can focus on receiving GoalStates.
-  // void UpdateGoalStateInNewThread(ServerReaderWriter<GoalStateOperationReply, GoalStateV2> *stream,
-  //                                 GoalStateV2 goalState,
-  //                                 GoalStateOperationReply gsOperationReply);
+  void UpdateGoalStateInNewThread(ServerReaderWriter<GoalStateOperationReply, GoalStateV2> *stream,
+                                  GoalStateV2 goalState,
+                                  GoalStateOperationReply gsOperationReply);
 
   // void ConnectToNCM();
 
   private:
   std::unique_ptr<Server> server;
+  ctpl::thread_pool tPool;
 };
 
 // struct AsyncClientCall {
